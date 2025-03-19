@@ -1,0 +1,25 @@
+{
+  "name": "dichtruyen.app",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "terser": "^5.39.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vite-plugin-monkey": "^5.0.3"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "idb-keyval": "^6.2.1",
+    "text-vide": "^1.8.1",
+    "vanjs-core": "^1.5.3",
+    "vanjs-ext": "^0.6.2",
+    "vanjs-ui": "^0.11.10"
+  }
+}
