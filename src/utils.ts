@@ -77,9 +77,13 @@ export const translateFunc = async (
     if (!currentAi || !prompt.isValid) return;
     replaceAppState({ isTranslating: true, currentView: "reader" });
 
+    if (!currentAi?.baseURL || !currentAi?.apiKey) {
+      throw new Error("AI provider configuration is incomplete.");
+    }
+
     const options = {
-      baseURL: currentAi?.baseURL,
-      apiKey: currentAi?.apiKey,
+      baseURL: currentAi.baseURL,
+      apiKey: currentAi.apiKey,
       data: {
         model: currentAi?.model,
         messages: [{ role: "user", content: prompt.content }],

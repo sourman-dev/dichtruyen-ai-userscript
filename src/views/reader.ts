@@ -30,7 +30,7 @@ define("reader-view", ({mount}) => {
                 const article = new Readability(documentClone).parse();
                 // let translated = ""
                 await translateFunc(article?.content, (chunk: string ) => {
-                    container.innerHTML = bionicReading.val === true ? textVide(chunk) : cached(chunk);
+                    container.innerHTML = bionicReading.val === true ? textVide(chunk) : chunk;
                 });
                 ConfigChaptersLink.visbile();
             }
