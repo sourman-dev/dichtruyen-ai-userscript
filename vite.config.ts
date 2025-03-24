@@ -8,16 +8,6 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  // optimizeDeps: {
-  //   exclude: ['worker_threads', 'os', 'child_process'],
-  //   esbuildOptions: {
-  //     target: ['es2020', 'safari11'],
-  //     supported: { 
-  //       bigint: true,
-  //       'safari-15': true
-  //     },
-  //   }
-  // },
   plugins: [
     monkey({
       entry: 'src/main.ts',
