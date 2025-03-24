@@ -1,0 +1,2246 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+<additional_info>
+
+</additional_info>
+
+</file_summary>
+
+<directory_structure>
+.github/
+  workflows/
+    test.yml
+docs/
+  .vitepress/
+    theme/
+      custom.css
+      index.js
+    config.ts
+  advanced/
+    shared-state.md
+    slots.md
+    styling.md
+  intro/
+    get-started.md
+    installation.md
+    tutorial.md
+  learn/
+    attributes.md
+    lifecycle.md
+    overview.md
+    shadow-options.md
+  public/
+    logo.color.svg
+    logo.dark.svg
+    logo.svg
+  components.ts
+  examples.md
+  index.md
+scripts/
+  build.ts
+src/
+  showcase.ts
+  van-element.d.ts
+  van-element.js
+tests/
+  internals.test.ts
+  light-dom.test.ts
+  setup.ts
+types/
+  van-element.d.ts
+.gitignore
+bunfig.toml
+index.html
+LICENSE
+package.json
+README.md
+tsconfig.json
+vite.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="docs/.vitepress/theme/index.js">
+import DefaultTheme from "vitepress/theme";
+import "./custom.css";
+
+export default {
+  extends: DefaultTheme,
+  async enhanceApp() {
+    !import.meta.env.SSR && import("../../components.ts");
+  },
+};
+</file>
+
+<file path="docs/advanced/shared-state.md">
+# How to share state accross Van Elements
+
+There are a few techniques we can use to share state across different Van Elements
+
+## Global state
+
+The simplest way to share state is to create a `van.state` object in the global scope, and share it between different Van Elements. You can even use [VanX.reactive](https://vanjs.org/x#reactive-object) to create a store.
+
+Here is a simple example:
+
+<<< @/components.ts#sharedState
+
+Now this state can be modified in one place:
+
+```html
+<increment-state></increment-state>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <increment-state></increment-state>
+</fieldset>
+
+And displayed in a different place in the DOM!
+
+```html
+<display-state></display-state>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <display-state></display-state>
+</fieldset>
+
+One downside of this approach is that the state is truly global. Try to click on another item in the sidebar then back here: the counter shoud still display the same value.
+
+Usually, it is not a big issue as global state is often suitable.
+
+## Local state
+
+In order to achieve local shared state, we have to implement a _context_, similar to React Context. The context will serve state to its children (provider), which can then read its value (consumers).
+
+Fortunately, there is a context specification we can use to turn our Van Elements into context providers / consumers. Since it's a spec, it can even allow interaction with other contexts like Lit Context.
+
+::: info Note
+I have not worked extensively on this solution since I don't think it is as useful. All I have is this [very raw CodePen](https://codepen.io/atmos4/pen/NWJNVNz) and some draft code on my computer somewhere.
+
+If this is of interest to you, feel free to create an issue and I will polish whatever code I have to turn it into a reusable package!
+:::
+</file>
+
+<file path="docs/advanced/styling.md">
+# Styling
+
+There are several ways to style a Van Element.
+
+::: warning
+
+The Shadow DOM gets in the way very often, and is even one of the main reasons Web Components face skepticism from the Web development community.
+
+If you don't want isolated styles, you can [use Van Elements without the Shadow DOM](../learn/shadow-options#disable-shadow-dom)!
+
+:::
+
+## Inline styles
+
+The simplest way to style Van Elements is inline styles
+
+<<< @/components.ts#inlineStyles
+
+```html
+<inline-styles></inline-styles>
+```
+
+<fieldset>
+<legend>Result</legend>
+<inline-styles></inline-styles>
+</fieldset>
+
+Inline styles are often frowned upon for good reasons. However, in an isolated environment like the Shadow DOM, they can work really well if complex styling is not needed.
+
+## `style` tag
+
+If you want more complex styling, using a `style` tag is a very good option. The reason it works is because the Shadow DOM will isolate these styles from the rest of the DOM so it won't leak out!
+
+::: tip
+
+You can use the CSS selector `::slotted` to apply specific styles to the slotted element.
+
+:::
+
+<<< @/components.ts#styleTag
+
+```html
+<style-tag><p>Paragraph in the slot</p></style-tag>
+<p>Paragraph in normal DOM</p>
+```
+
+<fieldset>
+<legend>Result</legend>
+<style-tag><p>Paragraph in the slot</p></style-tag>
+<p>Paragraph in normal DOM</p>
+</fieldset>
+
+## Adopted stylesheets
+
+This method revolves around creating a `CSSStyleSheet` and add it to the Shadow Root.
+
+<<< @/components.ts#adoptedStyle
+
+```html
+<adopted-style>Adopted styles!</adopted-style>
+```
+
+<fieldset>
+<legend>Result</legend>
+<adopted-style>Adopted styles!</adopted-style>
+</fieldset>
+
+::: warning
+
+This method currently lacks testing and support. It is also a bit more awkward to use, so the `style` tag method is preferred.
+
+However it has benefits, the major one being that you can _merge two style sheets_ without conflicts or _share them between components_.
+
+If you would like more support for this, feel free to create an issue or even to contribute 🙂
+
+:::
+</file>
+
+<file path="docs/intro/installation.md">
+# Installation
+
+In order to use Van Elements, you will need:
+
+- Some understanding of Web Components ([Web Components MDN docs](https://developer.mozilla.org/en-US/docs/Web/API/Web_components).)
+- Basic knowledge of VanJS syntax ([VanJS docs](https://vanjs.org/))
+
+### Package manager
+
+::: code-group
+
+```sh [npm]
+$ npm add vanjs-core vanjs-element
+```
+
+```sh [pnpm]
+$ pnpm add vanjs-core vanjs-element
+```
+
+```sh [yarn]
+$ yarn add vanjs-core vanjs-element
+```
+
+```sh [bun]
+$ bun add vanjs-core vanjs-element
+```
+
+:::
+
+```ts
+import van from "vanjs-core";
+import { define } from "vanjs-element";
+```
+
+### Browser
+
+Since Van Element doesn't require a build step, it can be loaded from a CDN or stored in a local file ([download on jsDelivr](https://www.jsdelivr.com/package/npm/vanjs-element)).
+
+::: code-group
+
+```html [CDN]
+<script src="https://cdn.jsdelivr.net/gh/vanjs-org/van/public/van-latest.nomodule.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanjs-element@latest/dist/van-element.browser.js"></script>
+```
+
+```html [Local files]
+<script src="/path/to/vanjs"></script>
+<script src="/path/to/van-element"></script>
+```
+
+```html [Import maps]
+<!-- import maps are now baseline 🎉 -->
+<script type="importmap">
+  {
+    "imports": {
+      "vanjs-core": "https://esm.sh/vanjs-core",
+      "vanjs-element": "https://esm.sh/vanjs-element"
+    }
+  }
+</script>
+<script type="module">
+  import van from "vanjs-core";
+  import { define } from "vanjs-element";
+
+  ...
+</script>
+```
+
+:::
+
+When imported in the global scope, you can use the global object `vanE`.
+
+```javascript
+vanE.define(...);
+```
+
+::: warning Note:
+
+Since it uses `window.customElements`, Van Element only works in the browser and should not be used during SSR. Refer to the documentation of your framework to prevent it from defining Van Elements on the server.
+
+:::
+</file>
+
+<file path="docs/public/logo.color.svg">
+<svg width="1024" height="1024" version="1.0" viewBox="0 0 768 768"
+    xmlns="http://www.w3.org/2000/svg">
+    <path fill="#f44336"
+        d="M 557.149 397.618 L 593.814 397.618 C 616.659 397.618 634.723 381.143 634.723 360.953 C 634.723 345.016 624.628 335.981 606.031 335.449 L 552.899 335.449 L 542.804 335.981 C 521.019 336.514 515.173 339.169 506.139 354.578 L 499.764 365.739 L 373.839 579.866 L 373.839 477.321 C 373.839 427.905 371.179 402.401 364.273 382.21 C 354.177 353.518 318.048 331.734 279.789 331.734 C 202.215 331.734 135.267 398.148 135.267 475.195 C 135.267 529.392 177.243 571.899 229.846 571.899 C 268.101 571.899 295.199 554.897 295.199 530.453 C 295.199 517.169 281.915 504.947 267.568 505.48 L 245.254 506.013 C 222.938 506.541 205.402 489.538 205.402 468.286 C 205.402 431.625 237.814 396.554 271.821 396.554 C 285.104 396.554 296.792 405.588 301.574 419.937 C 305.294 430.032 305.827 437.469 306.888 477.321 L 311.141 652.128 C 311.669 669.131 313.263 676.572 318.048 684.541 C 323.891 694.104 337.174 701.011 350.456 701.011 C 370.118 701.011 382.341 691.982 397.217 666.477 L 557.149 397.618 Z M 557.149 397.618"></path>
+    <g transform="matrix(15.094721, 0, 0, 15.094721, 34.741825, -100.788559)">
+        <path fill="#e9940c"
+            d="M40.331 16.802l.961 3.307-7.361 2.08s0 4.427-3.572 6.186c-3.572 1.761-6.347.269-6.347.269l-.445-1.279 5.3-1.441 1.174-4.535-3.416-3.358-4.906 1.484-.426-1.165s2.293-5.067 9.067-2.187c0 0 2.135 1.333 2.613 2.506l7.358-1.867zM41.292 16.553l1.173-.337.944 3.379-1.229.37zM41.706 16.405l.759-.189.944 3.379-1.229.37-.32-1.13.49-.191zM39.518 17.01l.812-.207.961 3.307-7.361 2.08s-.078 3.864-2.639 5.612c-2.559 1.748-5.441 1.694-7.28.844l-.205-.591s5.007 1.177 7.485-2.585c1.494-2.48 1.467-4.266 1.467-4.266l7.389-1.999-.629-2.195zM21.29 18.349l4.322-1.254 1.012.935-4.908 1.484zM6.058 20.695l.868 3.333 7.386-1.978s2.267 3.802 6.238 3.485c3.972-.317 5.589-3.016 5.589-3.016l-.273-1.33-5.288 1.476-3.328-3.295 1.214-4.635 4.975-1.233-.23-1.22s-4.562-3.181-8.909 2.76c0 0-1.15 2.238-.962 3.492l-7.28 2.161zM5.105 20.972l-1.18.311.917 3.384 1.246-.308zM4.674 21.055l-.749.228.917 3.384 1.246-.308-.301-1.137-.521.085zM6.863 20.457l-.805.238.868 3.333 7.386-1.978s2.047 3.276 5.142 3.468c3.093.192 5.541-1.325 6.685-3l-.123-.613s-3.701 3.572-7.755 1.611c-2.553-1.367-3.442-2.917-3.442-2.917l-7.373 2.062-.583-2.204zM23.21 12.281l-4.353 1.134-.393 1.319 4.976-1.233z"></path>
+    </g>
+</svg>
+</file>
+
+<file path="docs/public/logo.dark.svg">
+<svg width="1024" height="1024" version="1.0" viewBox="0 0 768 768"
+    xmlns="http://www.w3.org/2000/svg">
+    <path fill="#fff"
+        d="M 557.149 397.618 L 593.814 397.618 C 616.659 397.618 634.723 381.143 634.723 360.953 C 634.723 345.016 624.628 335.981 606.031 335.449 L 552.899 335.449 L 542.804 335.981 C 521.019 336.514 515.173 339.169 506.139 354.578 L 499.764 365.739 L 373.839 579.866 L 373.839 477.321 C 373.839 427.905 371.179 402.401 364.273 382.21 C 354.177 353.518 318.048 331.734 279.789 331.734 C 202.215 331.734 135.267 398.148 135.267 475.195 C 135.267 529.392 177.243 571.899 229.846 571.899 C 268.101 571.899 295.199 554.897 295.199 530.453 C 295.199 517.169 281.915 504.947 267.568 505.48 L 245.254 506.013 C 222.938 506.541 205.402 489.538 205.402 468.286 C 205.402 431.625 237.814 396.554 271.821 396.554 C 285.104 396.554 296.792 405.588 301.574 419.937 C 305.294 430.032 305.827 437.469 306.888 477.321 L 311.141 652.128 C 311.669 669.131 313.263 676.572 318.048 684.541 C 323.891 694.104 337.174 701.011 350.456 701.011 C 370.118 701.011 382.341 691.982 397.217 666.477 L 557.149 397.618 Z M 557.149 397.618"></path>
+    <g transform="matrix(15.094721, 0, 0, 15.094721, 34.741825, -100.788559)">
+        <path fill="#fff"
+            d="M40.331 16.802l.961 3.307-7.361 2.08s0 4.427-3.572 6.186c-3.572 1.761-6.347.269-6.347.269l-.445-1.279 5.3-1.441 1.174-4.535-3.416-3.358-4.906 1.484-.426-1.165s2.293-5.067 9.067-2.187c0 0 2.135 1.333 2.613 2.506l7.358-1.867zM41.292 16.553l1.173-.337.944 3.379-1.229.37zM41.706 16.405l.759-.189.944 3.379-1.229.37-.32-1.13.49-.191zM39.518 17.01l.812-.207.961 3.307-7.361 2.08s-.078 3.864-2.639 5.612c-2.559 1.748-5.441 1.694-7.28.844l-.205-.591s5.007 1.177 7.485-2.585c1.494-2.48 1.467-4.266 1.467-4.266l7.389-1.999-.629-2.195zM21.29 18.349l4.322-1.254 1.012.935-4.908 1.484zM6.058 20.695l.868 3.333 7.386-1.978s2.267 3.802 6.238 3.485c3.972-.317 5.589-3.016 5.589-3.016l-.273-1.33-5.288 1.476-3.328-3.295 1.214-4.635 4.975-1.233-.23-1.22s-4.562-3.181-8.909 2.76c0 0-1.15 2.238-.962 3.492l-7.28 2.161zM5.105 20.972l-1.18.311.917 3.384 1.246-.308zM4.674 21.055l-.749.228.917 3.384 1.246-.308-.301-1.137-.521.085zM6.863 20.457l-.805.238.868 3.333 7.386-1.978s2.047 3.276 5.142 3.468c3.093.192 5.541-1.325 6.685-3l-.123-.613s-3.701 3.572-7.755 1.611c-2.553-1.367-3.442-2.917-3.442-2.917l-7.373 2.062-.583-2.204zM23.21 12.281l-4.353 1.134-.393 1.319 4.976-1.233z"></path>
+    </g>
+</svg>
+</file>
+
+<file path="docs/public/logo.svg">
+<svg width="1024" height="1024" version="1.0" viewBox="0 0 768 768"
+    xmlns="http://www.w3.org/2000/svg">
+    <path
+        d="M 557.149 397.618 L 593.814 397.618 C 616.659 397.618 634.723 381.143 634.723 360.953 C 634.723 345.016 624.628 335.981 606.031 335.449 L 552.899 335.449 L 542.804 335.981 C 521.019 336.514 515.173 339.169 506.139 354.578 L 499.764 365.739 L 373.839 579.866 L 373.839 477.321 C 373.839 427.905 371.179 402.401 364.273 382.21 C 354.177 353.518 318.048 331.734 279.789 331.734 C 202.215 331.734 135.267 398.148 135.267 475.195 C 135.267 529.392 177.243 571.899 229.846 571.899 C 268.101 571.899 295.199 554.897 295.199 530.453 C 295.199 517.169 281.915 504.947 267.568 505.48 L 245.254 506.013 C 222.938 506.541 205.402 489.538 205.402 468.286 C 205.402 431.625 237.814 396.554 271.821 396.554 C 285.104 396.554 296.792 405.588 301.574 419.937 C 305.294 430.032 305.827 437.469 306.888 477.321 L 311.141 652.128 C 311.669 669.131 313.263 676.572 318.048 684.541 C 323.891 694.104 337.174 701.011 350.456 701.011 C 370.118 701.011 382.341 691.982 397.217 666.477 L 557.149 397.618 Z M 557.149 397.618"></path>
+    <g transform="matrix(15.094721, 0, 0, 15.094721, 34.741825, -100.788559)">
+        <path
+            d="M40.331 16.802l.961 3.307-7.361 2.08s0 4.427-3.572 6.186c-3.572 1.761-6.347.269-6.347.269l-.445-1.279 5.3-1.441 1.174-4.535-3.416-3.358-4.906 1.484-.426-1.165s2.293-5.067 9.067-2.187c0 0 2.135 1.333 2.613 2.506l7.358-1.867zM41.292 16.553l1.173-.337.944 3.379-1.229.37zM41.706 16.405l.759-.189.944 3.379-1.229.37-.32-1.13.49-.191zM39.518 17.01l.812-.207.961 3.307-7.361 2.08s-.078 3.864-2.639 5.612c-2.559 1.748-5.441 1.694-7.28.844l-.205-.591s5.007 1.177 7.485-2.585c1.494-2.48 1.467-4.266 1.467-4.266l7.389-1.999-.629-2.195zM21.29 18.349l4.322-1.254 1.012.935-4.908 1.484zM6.058 20.695l.868 3.333 7.386-1.978s2.267 3.802 6.238 3.485c3.972-.317 5.589-3.016 5.589-3.016l-.273-1.33-5.288 1.476-3.328-3.295 1.214-4.635 4.975-1.233-.23-1.22s-4.562-3.181-8.909 2.76c0 0-1.15 2.238-.962 3.492l-7.28 2.161zM5.105 20.972l-1.18.311.917 3.384 1.246-.308zM4.674 21.055l-.749.228.917 3.384 1.246-.308-.301-1.137-.521.085zM6.863 20.457l-.805.238.868 3.333 7.386-1.978s2.047 3.276 5.142 3.468c3.093.192 5.541-1.325 6.685-3l-.123-.613s-3.701 3.572-7.755 1.611c-2.553-1.367-3.442-2.917-3.442-2.917l-7.373 2.062-.583-2.204zM23.21 12.281l-4.353 1.134-.393 1.319 4.976-1.233z"></path>
+    </g>
+</svg>
+</file>
+
+<file path="tests/setup.ts">
+import { GlobalRegistrator } from "@happy-dom/global-registrator";
+
+GlobalRegistrator.register();
+</file>
+
+<file path="bunfig.toml">
+[test]
+preload = "./tests/setup.ts"
+</file>
+
+<file path="LICENSE">
+MIT License
+
+Copyright (c) 2023 Atmos4
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</file>
+
+<file path=".github/workflows/test.yml">
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun test
+</file>
+
+<file path="docs/advanced/slots.md">
+# Slots
+
+::: info
+
+You can only used slots if the Shadow DOM is enabled.
+
+:::
+
+Slots are like children in VanJS, but for Web Components.
+
+<<< @/components.ts#slots {javascript}
+
+```html
+<slot-demo><strong>Robert</strong> and <i>Marie</i></slot-demo>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <slot-demo>
+        <strong>Robert</strong> and <i>Marie</i>
+    </slot-demo>
+</fieldset>
+
+Slots can have names, which allows you to customize many different places in the Van Element.
+
+<<< @/components.ts#slotsNames {javascript}
+
+```html
+<slot-names>
+  <span slot="title">The title</span>
+  <p>The paragraph</p>
+</slot-names>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <slot-names>
+        <span slot="title">The title</span>
+        <p>The paragraph</p>
+    </slot-names>
+</fieldset>
+
+You will find more examples in the [Examples](../examples) section.
+</file>
+
+<file path="docs/learn/attributes.md">
+# Attributes
+
+You can retrieve attributes with the provided `attr` method. It takes an attribute name and an optional default value and returns a VanJS `State` object.
+
+Example:
+
+<<< @/components.ts#attributes {javascript}
+
+```html
+<attributes-demo name="Bob"></attributes-demo>
+<attributes-demo name="Jimmy"></attributes-demo>
+<!-- default value -->
+<attributes-demo></attributes-demo>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <attributes-demo name="Bob"></attributes-demo>
+    <attributes-demo name="Jimmy"></attributes-demo>
+    <attributes-demo></attributes-demo>
+</fieldset>
+
+::: tip Note
+
+This method is a wrapper around `van.state`. Because of this, you will need to use [state derivation](https://vanjs.org/tutorial#state-derived-prop) in places you want to be reactive.
+
+```js
+define("not-reactive", ({ attr }) => p(`Hello ${attr("name").val}`));
+
+define("very-reactive", ({ attr }) => p(() => `Hello ${attr("name").val}`));
+```
+
+:::
+
+## Attribute reactivity
+
+The `State` obtained from `attr()` is reactive to attribute change. This is useful when nesting Van Elements inside other Van Elements 🤯
+
+<<< @/components.ts#observed {javascript}
+
+```html
+<attribute-parent></attribute-parent>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <attribute-parent></attribute-parent>
+</fieldset>
+
+::: tip Note
+
+You can use `kebab-case-attributes`.
+
+```js
+const element = van.tags["some-element"]({ "data-text": "hello" });
+```
+
+Resulting HTML:
+
+```html
+<some-element data-text="hello"></some-element>
+```
+
+However you cannot use `camelCaseAttributes` :pleading_face: it is not valid HTML syntax and will be turned into lowercase by the browser.
+
+:::
+</file>
+
+<file path="scripts/build.ts">
+import { build } from "vite";
+import chalk from "chalk";
+import { gzipSizeSync } from "gzip-size";
+import { minify } from "terser";
+
+async function compress(content: string, file: string) {
+  const result = await minify(content, {
+    compress: true,
+    toplevel: true,
+    mangle: true,
+  });
+  await Bun.write(file, result.code!);
+  console.log(
+    `${file}  ` +
+      chalk.gray(
+        `${Buffer.from(result.code!).length} B | gzip: ${gzipSizeSync(
+          result.code!
+        )} B`
+      )
+  );
+}
+
+const inputFilePath = "src/van-element.js";
+const outputModuleFilePath = "dist/van-element.js";
+const outputBrowserFilePath = "dist/van-element.browser.js";
+
+// vite build
+await build();
+
+// custom build - optimize output size
+const timer = Date.now();
+console.log(chalk.grey(`\nbuilding esm and iife version...`));
+
+const bundle = await Bun.file(inputFilePath).text();
+const lines = bundle.split("\n");
+const filteredLines = lines.filter(
+  (line) =>
+    !line.trim().startsWith("export") && !line.trim().startsWith("import")
+);
+const updatedContent = filteredLines.join("\n");
+const finalContent = `${updatedContent}window.vanE={define}`;
+
+console.log(`${chalk.green("✓")} transformed iife`);
+
+await compress(finalContent, outputBrowserFilePath);
+await compress(bundle, outputModuleFilePath);
+console.log(chalk.green(`✓ build in ${Date.now() - timer}ms`));
+</file>
+
+<file path="tests/light-dom.test.ts">
+import van from "vanjs-core";
+import { define } from "../src/van-element";
+import { describe, expect, it } from "vitest";
+
+const { div } = van.tags;
+
+define("light-dom", () => div({ class: "light" }, "Hello"), false);
+define("shadow-dom", () => div({ class: "shadow" }, "World"));
+
+describe("Shadow DOM options", () => {
+  it("should expose light Van Element", () => {
+    document.body.innerHTML = `<light-dom></light-dom>`;
+    expect(document.querySelector(".light")).toBeTruthy();
+  });
+
+  it("should encapsulate shadow Van Element", () => {
+    document.body.innerHTML = `<shadow-dom></shadow-dom>`;
+    expect(
+      document.querySelector("shadow-dom")?.shadowRoot?.querySelector(".shadow")
+    ).toBeTruthy();
+    expect(document.querySelector(".shadow")).toBeFalsy();
+  });
+});
+</file>
+
+<file path=".gitignore">
+node_modules
+docs/.vitepress/cache
+docs/.vitepress/dist
+</file>
+
+<file path="docs/.vitepress/theme/custom.css">
+:root {
+  --vp-c-brand-1: var(--vp-c-red-1);
+  --vp-c-brand-2: var(--vp-c-red-2);
+  --vp-c-brand-3: var(--vp-c-red-3);
+
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+    120deg,
+    #ffd341,
+    #fe3434 100%
+  );
+}
+fieldset {
+  padding: 0 20px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-red-1);
+}
+</file>
+
+<file path="docs/learn/lifecycle.md">
+# Lifecycle
+
+Sometimes, you want to execute code only when a Van Element has connected to the DOM. The most typical use case is when you try to access `assignedElements` from a slot:
+
+<<< @/components.ts#mountExample
+
+```html
+<connect-example><p>I am in the slot</p></connect-example>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <connect-example><p>I am in the slot</p></connect-example>
+</fieldset>
+
+Here, the number of items in the slot is `0` :thinking: that is because slots will only get populated _after_ the Web Component has mounted.
+
+## `mount`
+
+Fortunately, we can define a `mount` callback:
+
+<<< @/components.ts#mountShowcase
+
+```html
+<mount-showcase><p>I am in the slot</p></mount-showcase>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <mount-showcase><p>I am in the slot</p></mount-showcase>
+</fieldset>
+
+## `dismount`
+
+The `mount` function can return another callback that triggers when the component is dismounted.
+
+```js
+mount(() => {
+  console.log("mounted");
+  return () => console.log("dismounted");
+});
+```
+
+This can be useful for unsubscribing to certain events, keeping tracks of mounted elements, etc.
+
+::: tip Note
+
+In most cases, you won't have to use `mount`. However, there are cases where you need it and it will then be very useful!
+
+:::
+</file>
+
+<file path="docs/learn/shadow-options.md">
+# Options
+
+Internally, Van Elements use `attachShadow` to attach a Shadow root to the element. You can change `attachShadow`'s options with an extra argument to the `define` function.
+
+```js
+define("my-element", () => p("Closed root, delegating focus 🎉"), {
+  mode: "closed",
+  delegatesFocus: true,
+});
+```
+
+You can read more about [the Shadow root options on MDN](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow#parameters).
+
+## Disable Shadow DOM
+
+Instead of the `options` object, you can pass `false` as third argument to disable the Shadow DOM completely.
+
+```js
+define(
+  "van-element",
+  () => p("I don't like isolation 🤗"),
+  false // Passing false as 3rd argument will disable the Shadow DOM
+);
+```
+
+Things that will **stop working**:
+
+- DOM and style isolation
+- slots
+
+Everything else **will work the exact same**, including:
+
+- `$this`, `mount`, `attr`
+- all VanJS logic
+- hydration and reusability
+
+## Shadow DOM or not?
+
+**You can safely disable the Shadow DOM if:**
+
+- All you want is easy hydration
+- Isolation gets in the way
+- You don't need slots
+
+**You _should not_ disable it if:**
+
+- You are building isolated components (component library, design system)
+- You need slots for composition
+</file>
+
+<file path="tests/internals.test.ts">
+import van from "vanjs-core";
+import { beforeEach, describe, expect, it, jest, mock } from "bun:test";
+import { define } from "../src/van-element";
+import { useFakeTimers } from "sinon";
+
+const { button, div, slot } = van.tags;
+
+const mountFn = mock();
+const unmountFn = mock();
+const secondMount = mock();
+const secondUnmount = mock();
+const clickFn = mock();
+const fakeTimer = useFakeTimers();
+
+define("internals-test", ({ attr, $this, mount }) => {
+  const attribute = attr("attribute", "default");
+
+  const count = van.state(0);
+
+  mount(() => {
+    mountFn();
+    return unmountFn;
+  });
+
+  mount(() => {
+    secondMount();
+    return secondUnmount;
+  });
+
+  const onClick = () => {
+    clickFn();
+    count.val++;
+    $this.dispatchEvent(new CustomEvent("count", { detail: count.val }));
+  };
+  return [
+    div("Attribute: ", attribute),
+    button({ onclick: () => onClick() }, "Count: ", count),
+    slot(),
+  ];
+});
+
+describe("check that a Van Element", async () => {
+  beforeEach(() => {
+    fakeTimer.reset();
+    jest.clearAllMocks();
+  });
+
+  it("has VanJS behavior", async () => {
+    mountComponent();
+    queryInShadow("button")?.click();
+    expect(clickFn).toHaveBeenCalled();
+    await flushUpdates();
+    expect(queryInShadow("button")?.textContent).toContain("1");
+  });
+
+  it("has attribute reactivity", async () => {
+    mountComponent("Jack");
+    expect(queryInShadow("div")?.textContent).toContain("Jack");
+    getComponent()!.setAttribute("attribute", "John");
+    await flushUpdates();
+    expect(queryInShadow("div")?.textContent).toContain("John");
+  });
+
+  it("mounts and unmounts properly", () => {
+    expect(mountFn).not.toHaveBeenCalled();
+    mountComponent();
+    expect(mountFn).toHaveBeenCalled();
+    getComponent()!.remove();
+    expect(unmountFn).toHaveBeenCalled();
+  });
+
+  it("propagates events out", () => {
+    const spyClick = mock();
+    mountComponent();
+    getComponent()!.addEventListener("count", spyClick);
+    queryInShadow("button")?.click();
+    expect(spyClick).toHaveBeenCalled();
+  });
+
+  it("has a main slot", () => {
+    mountComponent("Bob", "Hi mom");
+    const slotted = queryInShadow("slot")?.assignedNodes();
+    expect(slotted?.[0].textContent).toContain("Hi mom");
+  });
+
+  it("multiple mount callbacks", () => {
+    mountComponent();
+    expect(mountFn).toHaveBeenCalled();
+    expect(secondMount).toHaveBeenCalled();
+    getComponent()!.remove();
+    expect(unmountFn).toHaveBeenCalled();
+    expect(secondUnmount).toHaveBeenCalled();
+  });
+});
+
+// helper functions
+function getComponent() {
+  return document.body.querySelector("internals-test");
+}
+
+function queryInShadow<K extends keyof HTMLElementTagNameMap>(
+  selector: K
+): HTMLElementTagNameMap[K] | null | undefined {
+  return getComponent()?.shadowRoot?.querySelector(selector);
+}
+
+function mountComponent(name = "Peter", children = "") {
+  document.body.innerHTML = `<internals-test attribute="${name}">${children}</internals-test>`;
+}
+
+async function flushUpdates() {
+  await fakeTimer.runAllAsync();
+}
+</file>
+
+<file path="docs/intro/get-started.md">
+# Hello and welcome 👋
+
+Here you can learn about Van Elements in different ways:
+
+- Read the following introduction for a brief summary.
+- Take a more hands-on approach with [the tutorial](./tutorial)
+- Browse [the examples](../examples) for concrete real-world applications
+- Dive in [the API overview](../learn/overview) if you like to read 🤓
+
+## What is a Van Element
+
+A Van Element is a [VanJS](https://vanjs.org/) Web Component. You can create one with the `define` method:
+
+<<< @/components.ts#getstarted {javascript}
+
+Then this element can be used anywhere in HTML
+
+```html
+<custom-element></custom-element>
+```
+
+<fieldset>
+    <legend>Result</legend>
+    <custom-element></custom-element>
+</fieldset>
+
+## Why Van Element
+
+[VanJS](https://vanjs.org/) is a fantastic ultra-lightweight option for building reactive UI. However, hydrating VanJS inside HTML can feel a bit awkward.
+
+A Van Element leverages native custom elements to automatically hydrate HTML with VanJS reactivity. It retains all the [benefits from VanJS](https://vanjs.org/#why-vanjs) with a few extra ones:
+
+- ### Reusability
+
+Once defined, Van Elements can be added, removed and reused anywhere in your HTML with a simple custom tag.
+
+- ### Portability
+
+Van Elements are standard Web Components that can work with any framework or templating language. You can use them in backend templating or inside frontend libraries like React, Vue or Svelte.
+
+- ### Isolation
+
+Thanks to the Shadow DOM, Van Elements benefit from style encapsulation and won't conflict with existing styles or other Web Components.
+
+- ### Control
+
+Van Elements can access the [custom element lifecycle](../learn/lifecycle) and manipulate Shadow DOM utilities like [slots](../advanced/slots) to make it easier to build interactive components.
+
+## Web Components = 💩?
+
+> But why would I ever use Web Components? They are so hard to work with, I hate the Shadow DOM.
+
+The term `Web Components` is not a technical unity like React, but more of a concept regrouping two main APIs:
+
+- `custom elements`, the central part of Van Elements that enables hydration and lifecycle callbacks.
+- the `Shadow DOM`, a DOM and CSS isolation mechanism.
+
+Because the Shadow DOM isolates styles from the outside, it is very hard to work with when integrating with CSS frameworks, existing design systems or tools like Tailwind.
+
+Fortunately, **you can use Van Elements [without the Shadow DOM](../learn/shadow-options#disable-shadow-dom) and retain most of its benefits 🔥**
+</file>
+
+<file path="docs/intro/tutorial.md">
+# Tutorial
+
+Before starting, it is recommended that you take the [VanJS tutorial](https://vanjs.org/tutorial) 🙂
+
+You can follow the tutorial with [this CodePen template](https://codepen.io/pen?template=WNmQwLw), or just read along if you prefer!
+
+## First element
+
+Let's build our first Van Element! It will just be a `span` with inline styles:
+
+```js
+define("hello-world", () =>
+  span({ style: "color:red;font-size:20px" }, "Hello world!")
+);
+```
+
+```html
+My first Van Element: <hello-world></hello-world>
+```
+
+<fieldset>
+<legend>Result</legend>
+My first Van Element: <hello-world>Hello world</hello-world>
+</fieldset>
+
+## Slots
+
+Let's add children to our Van element. We can use the `slot` for this.
+
+```js
+const { span, slot } = van.tags;
+
+define("hello-world", () =>
+  span({ style: "color:red;font-size:20px" }, slot())
+);
+```
+
+```html
+Cool discovery: <hello-world>the slot</hello-world>
+```
+
+<fieldset>
+<legend>Result</legend>
+Cool discovery: <hello-world>the slot</hello-world>
+</fieldset>
+
+::: tip
+Because they are Web components, Van Elements can use the `slot` tag as a way to inject children HTML elements. [Learn more about slots here!](../advanced/slots)
+:::
+
+## Attributes
+
+It would be nice if we can change `color` and `font-size` from outside the Van Element, right?
+
+Meet the first property provided by Van Element: `attr()`. It takes an attribute name and an optional default value and returns a VanJS `State` object.
+
+```js
+define("hello-world", ({ attr }) => {
+  const color = attr(
+    "color", // name of the attribute
+    "red" // default value (optional)
+  );
+  const size = attr("size", 20);
+  return span(
+    { style: () => `color:${color.val};font-size:${size.val}` },
+    slot()
+  );
+});
+```
+
+```html
+<hello-world color="green" size="16px">I can be green </hello-world>
+<hello-world color="orange" size="24px">or orange </hello-world>
+<hello-world>or red by default</hello-world>
+```
+
+<fieldset>
+<legend>Result</legend>
+<hello-world color="green" size="16px">I can be green </hello-world>
+<hello-world color="orange" size="24px">or orange </hello-world>
+<hello-world>or default</hello-world>
+</fieldset>
+
+## Isolated styles
+
+There is another way we can style our content instead of inline styles: by using a `style` tag.
+
+Our Van Element is isolated in the Shadow DOM, so whatever we write in that inner style won't leak out to the rest of the page!
+
+<<< @/components.ts#isolatedStyles {javascript}
+
+```html
+The styles in the normal DOM
+<hello-world color="green">or in other Van Elements </hello-world>
+<hello-world>won't be affected!</hello-world>
+```
+
+<fieldset>
+<legend>Result</legend>
+The styles in the normal DOM
+<hello-world color="green">or in other Van Elements </hello-world>
+<hello-world>won't be affected!</hello-world>
+</fieldset>
+
+## Reactive Van Elements
+
+This tutorial is way too static. Let's add a bit of reactivity.
+
+Something nice about Van Elements is that you can reuse them... inside other Van Elements!
+
+As an example, let's build some handles for our Van Element:
+
+<<< @/components.ts#tuto4 {javascript}
+
+```html
+<tutorial-wrapper>Color sample</tutorial-wrapper>
+```
+
+<fieldset>
+<legend>Result</legend>
+<tutorial-wrapper>Color sample</tutorial-wrapper>
+</fieldset>
+
+## Lifecycle
+
+Since `em` is not very visual, it would be nice to get the computed `font-size` in pixels. We could use `window.getComputedStyle` for this! Let's try it:
+
+<<< @/components.ts#tuto5
+
+```html
+<computed-size size="1.5em">1.5em</computed-size><br />
+<computed-size size="1.2em" color="orange">1.2em</computed-size>
+```
+
+<fieldset>
+<legend>Result</legend>
+<computed-size size="1.5em">1.5em</computed-size><br />
+<computed-size size="1.2em" color="orange">1.2em</computed-size>
+</fieldset>
+
+That doesn't seem to work 🤔 the reason is that slots only get populated _after_ the component has rendered.
+
+For this, there is the `mount` hook: it registers a function that only runs when the component has mounted:
+
+<<< @/components.ts#tuto5fixed
+
+```html
+<computed-size-fixed size="1.5em">1.5em</computed-size-fixed><br />
+<computed-size-fixed size="1.2em" color="orange">1.2em</computed-size-fixed>
+```
+
+<fieldset>
+<legend>Result</legend>
+<computed-size-fixed size="1.5em">1.5em</computed-size-fixed><br />
+<computed-size-fixed size="1.2em" color="orange">1.2em</computed-size-fixed>
+</fieldset>
+
+Now we get the proper font sizes!
+
+## Self-reference
+
+There is one last thing we would want to do: we want to make sure our Van Element is used properly!
+
+Currently people can use anything in the slot: plain text, any HTML tags, even script tags 🤔 this might be intended for some components, but here we want to make sure that the only child of our Van Element is:
+
+- plain text
+- not white space
+
+We can access the reference of the Van Element using `$this`
+
+<<< @/components.ts#selfReference{2,3}
+
+```html
+<final-element color="orange" size="1.2em">Correct usage</final-element><br />
+<final-element color="orange" size="1.2em"><p>Wrong usage</p></final-element>
+```
+
+<fieldset>
+<legend>Result</legend>
+<final-element color="orange" size="1.2em">Correct usage</final-element><br />
+<final-element color="orange" size="1.2em"><p>Wrong usage</p></final-element>
+</fieldset>
+
+## That's it!
+
+You have reached the end of the tutorial! Now you know basically everything there is to know about Van Elements. You can now freely explore the wonders of the Web Component world... or [disable the Shadow DOM](../learn/shadow-options#disable-shadow-dom) if you prefer!
+</file>
+
+<file path="README.md">
+# Van Element - WebComponents with VanJS
+
+A simple function to create VanJS web components. [See it in action](https://codepen.io/atmos4/pen/ZEPEvvB).
+
+## Documentation
+
+https://van-element.pages.dev/.
+
+## Usage
+
+```javascript
+import van from "vanjs-core";
+import { define } from "vanjs-element";
+
+const { button, div, slot } = van.tags;
+
+define("custom-counter", () => {
+  const counter = van.state(0);
+  return div(
+    slot(),
+    counter,
+    button({ onclick: () => ++counter.val }, "+"),
+    button({ onclick: () => --counter.val }, "-")
+  );
+});
+```
+
+In your HTML:
+
+```html
+<custom-counter>❤️</custom-counter>
+
+<custom-counter>👌</custom-counter>
+```
+
+## Why use this
+
+- automatic hydration of VanJS inside your HTML
+- reusable components without extra boilerplate
+- isolated styles and slots with Web components
+- extremely tiny (295B min+gzip)
+</file>
+
+<file path="vite.config.ts">
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  build: {
+    lib: {
+      entry: "src/van-element.js",
+      name: "vanE",
+      formats: ["umd"],
+      fileName: "van-element",
+    },
+    rollupOptions: {
+      external: ["vanjs-core"],
+      output: {
+        globals: {
+          "vanjs-core": "van",
+        },
+      },
+    },
+  },
+});
+</file>
+
+<file path="docs/.vitepress/config.ts">
+import { defineConfig } from "vitepress";
+
+// https://vitepress.dev/reference/site-config
+export default defineConfig({
+  title: "Van Element - Docs",
+  description: "Documentation for Van Element",
+  /* prettier-ignore */
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/logo.color.svg' }],
+    ['link', { rel: 'icon', type: 'image/png', href: '/favicon.png' }],
+    ['meta', { name: 'theme-color', content: '#fe3434' }],
+    ['meta', { name: 'og:type', content: 'website' }],
+    ['meta', { name: 'og:locale', content: 'en' }],
+    ['meta', { name: 'og:site_name', content: 'Van Element' }],
+  ],
+  themeConfig: {
+    logo: {
+      src: "/logo.color.svg",
+    },
+    // https://vitepress.dev/reference/default-theme-config
+    nav: [
+      { text: "Get started", link: "/intro/get-started" },
+      { text: "Tutorial", link: "/intro/tutorial" },
+      { text: "Learn", link: "/learn/overview" },
+      { text: "Examples", link: "/examples" },
+    ],
+
+    sidebar: [
+      {
+        text: "Introduction",
+        base: "/intro/",
+        items: [
+          { text: "Get started", link: "get-started" },
+          { text: "Installation", link: "installation" },
+          { text: "Tutorial", link: "tutorial" },
+        ],
+      },
+      {
+        text: "Learn",
+        base: "/learn/",
+        items: [
+          { text: "Overview", link: "overview" },
+          { text: "Attributes", link: "attributes" },
+          { text: "Lifecycle", link: "lifecycle" },
+          { text: "Options", link: "shadow-options" },
+        ],
+      },
+      {
+        text: "Advanced",
+        base: "/advanced/",
+        items: [
+          { text: "Slots", link: "slots" },
+          { text: "Shared state", link: "shared-state" },
+          { text: "Styling", link: "styling" },
+        ],
+      },
+      { text: "Examples", link: "examples" },
+    ],
+
+    socialLinks: [
+      { icon: "github", link: "https://github.com/Atmos4/van-element" },
+    ],
+  },
+  vue: {
+    template: {
+      compilerOptions: {
+        // All custom elements will be Van Elements
+        isCustomElement: (tag) => tag.includes("-"),
+      },
+    },
+  },
+});
+</file>
+
+<file path="docs/index.md">
+---
+# https://vitepress.dev/reference/default-theme-home-page
+layout: home
+
+hero:
+  name: Van Element
+  tagline: Build reusable VanJS components easily.
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /intro/get-started
+    - theme: alt
+      text: VanJS docs
+      link: https://vanjs.org/
+  image:
+    src: /logo.color.svg
+    alt: VitePress
+
+features:
+  - icon: 🍦
+    title: Build with VanJS
+    details: Reactivity in 1kB.
+  - icon: ⚙️
+    title: The power of custom elements
+    details: Reusable and framework-agnostic.
+  - title: Lightweight and simple to use
+    icon: 🌸
+    details: One utility method, 300 bytes.
+---
+</file>
+
+<file path="src/van-element.d.ts">
+export * from "../types/van-element";
+</file>
+
+<file path="types/van-element.d.ts">
+import { State, ChildDom } from "vanjs-core";
+
+export type ElementProps = {
+  /** Get the value of an attribute */
+  attr: (name: string, defaultValue?: string | number) => State<string>;
+  /** Registers a callback that is called when the element connects to the DOM */
+  mount: (
+    /** Callback when the element connects to the DOM
+     * @returns An optional dismount callback
+     */
+    mount: () => (() => void) | void
+  ) => void;
+  /** Instance of the custom element */
+  $this: HTMLElement;
+};
+
+/**
+ * Defines a VanJS custom element.
+ */
+export declare const define: (
+  /** Name of the custom element */
+  name: string,
+  /** VanJS functional component */
+  element: (
+    /** Attributes of the custom element */
+    attributes: ElementProps
+  ) => ChildDom,
+  options?: ShadowRootInit | false
+) => void;
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Van Element</title>
+  <script type="module" src="/src/showcase.ts"></script>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :not(:defined) {
+      display: none;
+    }
+
+    html {
+      font-size: 1.2em;
+      width: min(100% - 3rem, 80ch);
+      margin: 2rem auto;
+      background: #bbbbbb10;
+      font-family: system-ui;
+    }
+
+    input,
+    button,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    h4::before {
+      content: "🟢";
+    }
+  </style>
+  <script>
+    if (localStorage.getItem('colorScheme')) {
+      document
+        .querySelector('meta[name="color-scheme"]')
+        ?.setAttribute("content", localStorage.getItem('colorScheme'));
+    }
+  </script>
+</head>
+<body>
+  <h1>Van Element showcase</h1>
+
+  <h4>Theme switch</h4>
+  <theme-switch></theme-switch>
+  <h4>Dynamic attribute injection</h4>
+  <p>Here is
+    <font-preview size="6" color="orange">a Van Element with attributes!</font-preview>
+  </p>
+  <p>(Attributes can have
+    <font-preview>default values</font-preview>)
+  </p>
+  <p>It can be used inside other Van Elements:</p>
+  <demo-component>Reactive to attribute change! 🎉</demo-component>
+
+  <h4>Mount and dismount</h4>
+  <mount-showcase></mount-showcase>
+
+  <h4>Modal</h4>
+  <custom-modal>
+    <button slot="open-button">Open me!</button>
+    <h1>Hello there!</h1>
+    <p>I am a custom modal 🔥</p>
+    <p>To close me you can either:</p>
+    <ul>
+      <li>click the ❌</li>
+      <li>click outside</li>
+      <li>press <code>ESC</code>
+      </li>
+    </ul>
+  </custom-modal>
+  <h4>Without Shadow DOM</h4>
+  <light-dom></light-dom>
+  <h4>Tabs</h4>
+  <tab-panel>
+    <p slot="tab">How is it going? I am just a casual tab 🫡<br>Clicking other tabs will assign the <code>tabs</code>
+      slot to another element!</p>
+    <article>
+      <p>The slotted content can be any HTML element or custom element, including Van Elements.</p>
+      <p><font-preview size="12" color="cyan">Let's reuse some elements as an example</font-preview></p>
+      <custom-modal>
+        <button slot="open-button">Look, another modal</button>
+        <p>I am another custom modal. Same component, but reused!</p>
+        <custom-modal>
+          <button slot="open-button">Nested modal?</button>
+          <h1>Here you go!</h1>
+          <p>It's that easy to do. No duplicated code or hydration boilerplate. Just reusing the exact same component.
+          </p>
+        </custom-modal>
+      </custom-modal>
+    </article>
+    <p data-tab="Custom tab name">Pretty cool right? Try to add more tabs!</p>
+  </tab-panel>
+</body>
+</html>
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    // Enable latest features
+    "lib": ["ESNext", "DOM"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "jsx": "react-jsx",
+    "allowJs": true,
+
+    // Bundler mode
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+
+    // Best practices
+    "strict": true,
+    "skipLibCheck": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Some stricter flags (disabled by default)
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noPropertyAccessFromIndexSignature": false
+  }
+}
+</file>
+
+<file path="docs/learn/overview.md">
+# Overview
+
+`Van Element` exposes a single function: `define(...)`. It can take up to 3 arguments:
+
+- `name`  
+  Custom element tag.
+- `element`  
+  VanJS functional component.
+- `options` (_optional_)  
+  Extra [Shadow DOM options](./shadow-options).
+
+The provided VanJS functional component will be called with an object containing the following properties:
+
+- `attr()`  
+  Method to [retrieve the value of a given attribute](./attributes).
+- `mount()`  
+  Lifecycle hook to [register `mount` and `dismount` callbacks](./lifecycle).
+- `$this`  
+  Refers to the instance of the created custom element. Useful for accessing properties or binding event listeners.
+</file>
+
+<file path="docs/examples.md">
+# Examples
+
+::: info
+
+This page is under construction.
+
+**Contributions are most welcomed! 🙂**
+
+:::
+
+This page will focus on showing more practical examples that reflect real world problems that can find a solution with Van Elements.
+
+These examples were written with the following philosophy:
+
+- most problems involving reactive UIs can be solved with VanJS
+- custom elements are a good fit for hydrating reactive logic into the DOM
+
+::: tip
+
+Shadow DOM can be useful for isolating specific styles. Parts that need to be exposed can just live in the slots.
+
+If it gets in the way, just disable it. It is not as big of a deal as you might think.
+
+:::
+
+## 1. Reusable confirmation modal
+
+This example illustrates how to create a self-contained confirmation modal. It uses a few techniques:
+
+- **slots** to populate a custom trigger
+- a custom `submit` event that allows to intercept actions from outside the component
+- Shadow DOM isolation
+
+<confirmation-modal cancel="No" confirm="Yes" onsubmit="alert('Confirmed')">
+  <button slot="trigger" style="margin:1rem;padding:.8rem;border:1px solid var(--vp-c-text-1)">Click to confirm</button>
+  <h3 style="margin:0">Please confirm</h3>
+  <p>Are you sure you want to do this?</p>
+</confirmation-modal>
+
+::: details Code
+<<< @/components.ts#confirmationModal {javascript}
+:::
+
+```html
+<confirmation-modal cancel="No" confirm="Yes" onsubmit="alert('Confirmed')">
+  <button slot="trigger">Click to confirm</button>
+  <h3>Confirmation</h3>
+  <p>Are you sure you want to do this?</p>
+</confirmation-modal>
+```
+
+Now, thanks to the power of custom element reusability, we can reuse that confirmation modal anywhere, with custom text and actions.
+
+<confirmation-modal>
+  <button slot="trigger" style="margin:1rem;padding:.8rem;border:1px solid var(--vp-c-text-1)">Open tip 💡</button>
+  <b>Tip of the day</b>
+  <p>Eat vegetables to stay healthy</p>
+</confirmation-modal>
+
+```html
+<confirmation-modal>
+  <button slot="trigger">Open tip 💡</button>
+  <b>Tip of the day</b>
+  <p>Eat vegetables to stay healthy</p>
+</confirmation-modal>
+```
+
+## 2. Normal VanJS code
+
+Van Element is just a way to hydrate VanJS. So we could simply take VanJS code and bind it to a custom element tag, and Van Element will put it in the DOM for us!
+
+As an example, let's shamefully take the Hello world program from VanJS's home page 🤫
+
+::: details Code
+<<< @/components.ts#minigame {typescript}
+:::
+
+In order to hydrate this into the DOM, we just have to bind that VanJS function to a custom element tag:
+
+<<< @/components.ts#minigameBind {javascript}
+
+Now we can just slap that custom element anywhere in our HTML 🎉
+
+```html
+<vanjs-game></vanjs-game>
+```
+
+<vanjs-game></vanjs-game>
+
+As it is now, this component looks ugly because we did not style it. We have 2 solutions:
+
+- [Style it](./advanced/styling) within the Shadow DOM. This will make our component truly isolated and reusable.
+- [Disable the Shadow DOM](./learn/shadow-options#disable-shadow-dom), and style it with external stylesheets. Our component will depend on those stylesheets and isn't truly reusable anymore, but we can now use our favorite CSS framework to make it look beautiful!
+
+**Choose whichever option you prefer**. People like to get emotional over the Shadow DOM, but in most cases it's not needed.
+</file>
+
+<file path="src/showcase.ts">
+import van from "vanjs-core";
+import { define } from "./van-element";
+
+const {
+  button,
+  dialog,
+  input,
+  option,
+  select,
+  slot,
+  span,
+  style,
+  div,
+  p,
+  pre,
+} = van.tags;
+
+define("theme-switch", () => {
+  const mode = localStorage.getItem("colorScheme");
+  const darkMode = van.state(
+    (mode && mode === "dark") ??
+      window.matchMedia?.("(prefers-color-scheme: dark)").matches
+  );
+  van.derive(() => {
+    const mode = darkMode.val ? "dark" : "light";
+    document
+      .querySelector('meta[name="color-scheme"]')
+      ?.setAttribute("content", mode);
+    localStorage.setItem("colorScheme", mode);
+  });
+  return [
+    button(
+      {
+        style: "font-size: 1.2em",
+        onclick: () => (darkMode.val = !darkMode.val),
+      },
+      () => (darkMode.val ? "☀️" : "😎")
+    ),
+    () => ` Toggle ${darkMode.val ? "light" : "dark"} mode`,
+  ];
+});
+
+define("font-preview", ({ attr }) =>
+  span(
+    {
+      style: () =>
+        `font-size: ${Number(attr("size", 12).val) / 8}em; color: ${
+          attr("color", "red").val
+        };`,
+    },
+    slot()
+  )
+);
+
+const animals = ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯"];
+
+function getRandomAnimal() {
+  return animals[Math.floor(Math.random() * animals.length)];
+}
+
+define("mount-demo", ({ mount, $this }) => {
+  const animal = getRandomAnimal();
+  mount(() => {
+    const parent = $this.parentElement?.getElementsByTagName("pre")?.[0];
+    parent?.append(div(`${animal} mounted`));
+    return () => {
+      parent?.append(div(`${animal} dismounted`));
+    };
+  });
+  return div(animal, " ", button({ onclick: () => $this.remove() }, "💀"));
+});
+
+define("mount-showcase", ({ $this, mount }) => {
+  const console = pre({ slot: "console" });
+  mount(() => {
+    van.add($this, console);
+  });
+  return div(
+    {
+      style:
+        "display:grid;grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));gap:1rem",
+    },
+    style("button{font:inherit}"),
+    div(
+      button(
+        { onclick: () => $this.append(van.tags["mount-demo"]()) },
+        "Add animal"
+      ),
+      slot()
+    ),
+    div(
+      "Console: ",
+      button({ onclick: () => (console.textContent = "") }, "Clear"),
+      slot({ name: "console" })
+    )
+  );
+});
+
+define("demo-component", () => {
+  const size = van.state(10),
+    color = van.state("green");
+  return span(
+    "Size: ",
+    input({
+      type: "range",
+      min: 5,
+      max: 20,
+      value: size,
+      oninput: (e) => (size.val = e.target.value),
+    }),
+    " Color: ",
+    select(
+      {
+        oninput: (e) => (color.val = e.target.value),
+        value: color,
+        style: "font:inherit",
+      },
+      ["green", "black", "blue", "red", "brown"].map((c) =>
+        option({ value: c }, c)
+      )
+    ),
+    div(van.tags["font-preview"]({ size: size, color: color }, slot()))
+  );
+});
+
+define("custom-modal", () => {
+  const modal = dialog(
+    {
+      style: "padding:0;border-radius: 10px",
+      onclick: (e) => e.target === modal && modal.close(),
+    },
+    div(
+      { style: "padding:1rem 2rem;position:relative" },
+      button(
+        {
+          onclick: () => modal.close(),
+          style: "position:absolute;top:10px;right:10px;line-height:1.2rem",
+        },
+        "❌"
+      ),
+      slot()
+    )
+  );
+
+  return [
+    // Some nice styles for the dialog
+    style(`
+    dialog[open] {
+        opacity: 1;
+        transform: scale(1);
+    }
+    dialog {
+        opacity: 0;
+        transform: scale(0.5);
+        transition: all 0.2s allow-discrete;
+    }
+    @starting-style {
+        dialog[open] {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+    }
+    dialog::backdrop {
+      background-color: rgb(0 0 0 / 0);
+      transition: all 0.2s allow-discrete;
+    }
+    dialog[open]::backdrop {
+      background-color: rgb(0 0 0 / 0.25);
+    }
+    @starting-style {
+      dialog[open]::backdrop {
+        background-color: rgb(0 0 0 / 0);
+      }
+    }
+    `),
+    slot({ name: "open-button", onclick: () => modal.showModal() }),
+    modal,
+  ];
+});
+
+define("tab-panel", ({ mount, $this }) => {
+  const tabButtons = div({
+    style: "display:flex;gap:0.2rem",
+  });
+  const selectedTab = van.state("");
+  const tabContent = slot({ name: "tab" }, p("No tab selected"));
+  mount(() =>
+    Array.from($this.children).forEach((p, i) => {
+      const tabTitle = p.getAttribute("data-tab") || `Tab ${i + 1}`;
+      if (p.getAttribute("slot")) {
+        selectedTab.val = tabTitle;
+      }
+      van.add(
+        tabButtons,
+        button(
+          {
+            onclick: () => {
+              tabContent.assignedElements()[0]?.removeAttribute("slot");
+              p.setAttribute("slot", "tab");
+              selectedTab.val = tabTitle;
+            },
+            style: () =>
+              `border-bottom:2px solid${
+                selectedTab.val == tabTitle ? "" : " transparent"
+              }`,
+          },
+          tabTitle
+        )
+      );
+    })
+  );
+  return [
+    style(
+      "button{font:inherit;padding: 0.5rem;border: none}#tab-area{min-height:200px}"
+    ),
+    div(tabButtons, div({ id: "tab-area" }, tabContent)),
+  ];
+});
+
+define("light-dom", () => p("I am in the light!"));
+</file>
+
+<file path="docs/components.ts">
+import van, { type State } from "vanjs-core";
+import { define } from "../src/van-element";
+
+const { button, dialog, div, h2, i, input, p, pre, slot, span, style } =
+  van.tags;
+
+// Tutorial
+
+// #region isolatedStyles
+define("hello-world", ({ attr }) => {
+  const color = attr("color", "red");
+  const size = attr("size", "20px");
+  return [
+    // Styles won't leak out! // [!code highlight:2]
+    style(() => `*{color:${color.val};font-size:${size.val}}`),
+    span(slot()),
+  ];
+});
+// #endregion isolatedStyles
+
+// #region tuto4
+const RangePicker = (min: number, max: number, value: State<number>) =>
+  input({
+    type: "range",
+    min,
+    max,
+    value,
+    oninput: (e) => (value.val = e.target.value),
+  });
+
+define("tutorial-wrapper", () => {
+  const color = van.state(0);
+  const size = van.state(20);
+  return div(
+    div("Hue: ", RangePicker(0, 360, color), () => ` ${color.val}deg`),
+    div("Size: ", RangePicker(20, 40, size), () => ` ${size.val / 20}em`),
+    p(
+      van.tags["hello-world"](
+        {
+          color: () => `hsl(${color.val} 100% 50%)`,
+          size: () => `${size.val / 20}em`,
+        },
+        slot()
+      )
+    )
+  );
+});
+// #endregion tuto4
+
+// #region tuto5
+define("computed-size", ({ attr }) => {
+  const color = attr("color", "red");
+  const size = attr("size", "20px");
+  const dom = slot();
+  return [
+    style(
+      () => `
+      * {
+        color: ${color.val};
+        font-size: ${size.val};
+      }
+    `
+    ),
+    span(dom),
+    window.getComputedStyle(dom, null).fontSize,
+  ];
+});
+// #endregion tuto5
+
+// #region tuto5fixed
+define("computed-size-fixed", ({ attr, mount }) => {
+  const color = attr("color", "red");
+  const size = attr("size", "20px");
+  const dom = slot();
+  const computedFontSize = van.state(""); // [!code ++:4]
+  mount(() => {
+    computedFontSize.val = window.getComputedStyle(dom, null).fontSize;
+  });
+  return [
+    style(
+      () => `
+      * {
+        color: ${color.val};
+        font-size: ${size.val};
+      }
+    `
+    ),
+    span(dom),
+    computedFontSize,
+  ];
+});
+// #endregion tuto5fixed
+
+// #region selfReference
+define("final-element", ({ attr, mount, $this }) => {
+  if ($this.childElementCount || !$this.innerHTML.trim())
+    return span({ style: "color:red" }, "ERROR - only text allowed");
+  const color = attr("color", "red");
+  const size = attr("size", "20px");
+  const dom = slot();
+  const computedFontSize = van.state("");
+  mount(() => {
+    computedFontSize.val = window.getComputedStyle(dom, null).fontSize;
+  });
+  return [
+    style(
+      () => `
+      * {
+        color: ${color.val};
+        font-size: ${size.val};
+      }
+    `
+    ),
+    span(dom),
+    computedFontSize,
+  ];
+});
+// #endregion selfReference
+
+// #region getstarted
+define("custom-element", () =>
+  p(
+    "I am a Van Element 🎉 ",
+    button({ onclick: () => alert("Hello from VanJS 🍦") }, "Click me")
+  )
+);
+// #endregion getstarted
+
+// #region shadowButton
+define("shadow-button", () => button("Shadow DOM"));
+// #endregion shadowButton
+
+// #region basic
+define("custom-counter", () => {
+  const counter = van.state(0);
+  return p(
+    div("Counter: ", counter),
+    button({ onclick: () => ++counter.val }, "+"),
+    button({ onclick: () => --counter.val }, "-"),
+    button({ onclick: () => (counter.val = 0) }, "Reset")
+  );
+});
+// #endregion basic
+
+// VanJS minigame!
+// #region minigame
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const Run = (sleepMs: number, icon: string) => {
+  const steps = van.state(0);
+  (async () => {
+    for (; steps.val < 40; ++steps.val) await sleep(sleepMs);
+  })();
+  return pre(
+    () => `${" ".repeat(40 - steps.val)}${icon}${"_".repeat(steps.val)}`
+  );
+};
+
+const Hello = () => {
+  const dom = div();
+  return p(
+    dom,
+    button({ onclick: () => van.add(dom, Run(2000, "🐌")) }, "Hello 🐌"),
+    button({ onclick: () => van.add(dom, Run(500, "🐢")) }, "Hello 🐢"),
+    button({ onclick: () => van.add(dom, Run(100, "🚶‍♂️")) }, "Hello 🚶‍♂️"),
+    button({ onclick: () => van.add(dom, Run(10, "🏎️")) }, "Hello 🏎️"),
+    button({ onclick: () => van.add(dom, Run(2, "🚀")) }, "Hello 🚀")
+  );
+};
+// #endregion minigame
+
+// #region minigameBind
+define("vanjs-game", Hello);
+// #endregion minigameBind
+
+// #region fontPreview
+
+// #endregion fontPreview
+
+// #region attributes
+define("attributes-demo", ({ attr }) =>
+  p(
+    "Hello ",
+    attr(
+      "name", // attribute name // [!code highlight]
+      "Max" // optional default value // [!code highlight]
+    )
+  )
+);
+// #endregion attributes
+
+// #region composition
+define("my-parent", () =>
+  p(
+    van.tags["attributes-demo"]({ name: "John" }) // Injected attributes  // [!code highlight]
+  )
+);
+// #endregion composition
+
+// #region observed
+define("reactive-attribute", ({ attr }) => p("Hello ", attr("name")));
+
+define("attribute-parent", () => {
+  const name = van.state("John");
+  return p(
+    "Type your name: ",
+    input({
+      type: "text",
+      value: name,
+      oninput: (e) => (name.val = e.target.value),
+    }),
+    van.tags["reactive-attribute"]({ name }) // nested Van Element // [!code highlight]
+  );
+});
+// #endregion observed
+
+// #region slots
+define("slot-demo", () => p("Hello ", slot()));
+// #endregion slots
+
+// #region slotsNames
+define("slot-names", () =>
+  div(
+    h2(slot({ name: "title" })), // Named slot // [!code highlight]
+    i("The Van Element 🍦"),
+    slot() // Default slot // [!code highlight]
+  )
+);
+// #endregion slotsNames
+
+// #region mountExample
+define("connect-example", () => {
+  const dom = slot();
+  return div(dom, pre("Items in slot - ", dom.assignedElements().length));
+});
+// #endregion mountExample
+
+// #region mountShowcase
+define("mount-showcase", ({ mount }) => {
+  const dom = slot();
+  const slotCount = van.state(dom.assignedElements().length);
+  mount(() => {
+    slotCount.val = dom.assignedElements().length;
+  });
+  return div(dom, pre("Items in slot - ", slotCount));
+});
+// #endregion mountShowcase
+
+// Styles
+
+// #region inlineStyles
+define("inline-styles", () => p({ style: "color:red" }, "I am red"));
+// #endregion inlineStyles
+
+// #region styleTag
+define("style-tag", () => [
+  style(`
+    p {
+      color: red;
+    }
+    ::slotted(p) {
+      color: orange;
+    }
+  `),
+  slot(),
+  p("Paragraph in Shadow DOM"),
+]);
+// #endregion styleTag
+
+// #region adoptedStyle
+define("adopted-style", ({ $this }) => {
+  const css = new CSSStyleSheet();
+  css.replaceSync(`
+    * {
+      color: orange;
+    }
+  `);
+  $this.shadowRoot?.adoptedStyleSheets.push(css);
+  return p(slot());
+});
+// #endregion adoptedStyle
+
+// EXAMPLES
+
+// #region confirmationModal
+define("confirmation-modal", ({ attr, $this }) => {
+  const confirmLabel = attr("confirm");
+  const cancelLabel = attr("cancel", "Close");
+  const onConfirm = () => {
+    modal.close();
+    $this.dispatchEvent(new Event("submit"));
+  };
+  const modal = dialog(
+    div({ class: "mainContent" }, slot()),
+    div(
+      { class: "actions" },
+      button({ onclick: () => modal.close() }, cancelLabel),
+      () => confirmLabel.val && button({ onclick: onConfirm }, confirmLabel.val)
+    )
+  );
+  return [
+    slot({ name: "trigger", onclick: () => modal.showModal() }),
+    modal,
+    // Some styles
+    style(`
+      dialog{
+        padding: 2rem;
+      }
+      dialog::backdrop{
+        backdrop-filter:blur(5px);
+      }
+      .mainContent{
+        text-align: center;
+      }
+      .actions{
+        display: flex;
+        justify-content: space-around;
+      }
+      button{
+        border:1px solid;
+        font: inherit;
+        padding: .5rem 1rem;
+        background: transparent;
+        cursor: pointer;
+      }`),
+  ];
+});
+// #endregion confirmationModal
+
+// #region sharedState
+const sharedState = van.state(0);
+
+define("increment-state", () =>
+  button({ onclick: () => sharedState.val++ }, "Increment (", sharedState, ")")
+);
+
+define("display-state", () =>
+  div(
+    sharedState,
+    " ",
+    button({ onclick: () => (sharedState.val = 0) }, "Reset")
+  )
+);
+// #endregion sharedState
+</file>
+
+<file path="src/van-element.js">
+import van from "vanjs-core";
+
+// Short prop names because class props are not minified.
+function define(name, element, options = { mode: "open" }) {
+  window.customElements.define(
+    name,
+    class extends HTMLElement {
+      constructor() {
+        super();
+        // Attributes
+        this.a = [];
+      }
+      setAttribute(name, value) {
+        super.setAttribute(name, value);
+        this.a[name] && (this.a[name].val = value);
+      }
+      connectedCallback() {
+        let mount;
+        van.add(
+          options ? this.attachShadow(options) : this,
+          element({
+            attr: (i, v) =>
+              (this.a[i] ??= van.state(this.getAttribute(i) ?? v)),
+            mount: (newMount) => {
+              let currentMount = mount;
+              mount = () => {
+                let currentDismount = currentMount?.();
+                let newDismount = newMount();
+                return () => {
+                  currentDismount?.();
+                  newDismount?.();
+                };
+              };
+            },
+            $this: this,
+          })
+        );
+        // Dismount
+        this.d = mount?.();
+      }
+      disconnectedCallback() {
+        this.d?.();
+      }
+    }
+  );
+}
+
+export { define };
+</file>
+
+<file path="package.json">
+{
+  "name": "vanjs-element",
+  "author": "Atmos4",
+  "license": "MIT",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Web components with VanJS",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "main": "./dist/van-element.browser.js",
+  "browser": "./dist/van-element.browser.js",
+  "module": "./dist/van-element.js",
+  "types": "./types/van-element.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/van-element.d.ts",
+      "import": "./dist/van-element.js",
+      "require": "./dist/van-element.umd.cjs",
+      "browser": "./dist/van-element.browser.js"
+    }
+  },
+  "keywords": [
+    "VanJS",
+    "Web components"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "bun run scripts/build.ts",
+    "preview": "vite preview",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "dependencies": {
+    "vanjs-core": "^1.5.0"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "^15.7.4",
+    "@types/bun": "latest",
+    "@types/sinon": "^17.0.3",
+    "chalk": "^5.3.0",
+    "gzip-size": "^7.0.0",
+    "sinon": "^19.0.2",
+    "terser": "^5.26.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.0",
+    "vitepress": "1.3.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Atmos4/van-element"
+  },
+  "bugs": {
+    "url": "https://github.com/Atmos4/van-element/issues"
+  }
+}
+</file>
+
+</files>

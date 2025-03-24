@@ -1,7 +1,7 @@
 {
   "name": "dichtruyen.app",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,17 +9,28 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/common-tags": "^1.8.4",
+    "@types/node": "^22.13.10",
     "terser": "^5.39.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
     "vite-plugin-monkey": "^5.0.3"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^0.2.0",
+    "@ai-sdk/google": "^1.2.1",
+    "@ai-sdk/openai": "^1.3.0",
     "@mozilla/readability": "^0.6.0",
+    "ai": "^4.2.0",
+    "common-tags": "^1.8.2",
     "idb-keyval": "^6.2.1",
+    "openai": "^4.89.0",
     "text-vide": "^1.8.1",
     "vanjs-core": "^1.5.3",
+    "vanjs-element": "^2.0.0",
     "vanjs-ext": "^0.6.2",
-    "vanjs-ui": "^0.11.10"
+    "vanjs-ui": "^0.11.10",
+    "workerpool": "^9.2.0",
+    "zod": "^3.24.2"
   }
 }
