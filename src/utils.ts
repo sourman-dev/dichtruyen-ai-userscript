@@ -223,7 +223,7 @@ export function findPrevNextChapterLinks() {
 
     return numA - numB; // Tăng dần: từ bé đến lớn
 });
-  console.log(matchingLinks)
+  // console.log(matchingLinks)
   if (matchingLinks.length === 2) {
     if (matchingLinks[0] === current) {
       return { previous: null, next: matchingLinks[1] };
