@@ -1,10 +1,10 @@
-import { textVide } from "text-vide";
+// import { textVide } from "text-vide";
 import { oneLine, stripIndent } from "common-tags";
 import { addToHistory } from "./cached";
 import type { HistoryItem } from "./types";
 import { replaceAppState, settingsState } from "./store";
 import { openAICompletion } from "./ai";
-import van from "vanjs-core";
+// import van from "vanjs-core";
 
 export async function fetchApi(url: string, returnType: string = "json") {
   try {
@@ -238,10 +238,10 @@ export function findPrevNextChapterLinks() {
   return { previous: null, next: null };
 }
 
-export const bionicReading = (text: string) => {
-  const bionicReading = van.derive(() => settingsState.readerView.bionicReading)
-  return bionicReading.val === true ? textVide(text) : text;
-};
+// export const bionicReading = (text: string) => {
+//   const bionicReading = van.derive(() => settingsState.readerView.bionicReading)
+//   return bionicReading.val === true ? textVide(text) : text;
+// };
 
 export const fetchResource = async (url: string) => {
   return await fetchApi(url, "text");
