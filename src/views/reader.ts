@@ -1,30 +1,36 @@
 import { define } from "vanjs-element";
 import { Readability } from "@mozilla/readability";
+import { textVide } from "text-vide";
 import van from "vanjs-core";
 import { getFromHistory } from "../cached";
-import { appState } from "../store";
-import { translateFunc, bionicReading } from "../utils";
+import { appState, settingsState } from "../store";
+import { translateFunc } from "../utils";
 import * as ConfigChaptersLink from "../components/chapters";
 
 const { div } = van.tags;
 
 define("reader-view", ({mount}) => {
     const container = div({class: "content-container"});
+    const bionicReading = van.state(false);
     
     mount(() => {
         (async () => {
             const cached =  await getFromHistory(window.location.href);
-            if(cached){
-                container.innerHTML = bionicReading(cached);
-                // console.log(findPrevNextChapterLinks())
-                ConfigChaptersLink.visbile()
-            }else{
+            van.derive(() => {
+                bionicReading.val = settingsState.readerView.bionicReading;
+                if(cached){
+                    container.innerHTML = bionicReading.val === true ? textVide(cached) : cached;
+                    ConfigChaptersLink.visbile()
+                    console.log('////')
+                }
+            })
+            if(!cached){
                 container.innerText = "[Xin đợi...]"
                 const documentClone = document.cloneNode(true) as Document;
                 const article = new Readability(documentClone).parse();
                 // let translated = ""
                 await translateFunc(article?.content, (chunk: string ) => {
-                    container.innerHTML = bionicReading(chunk);
+                    container.innerHTML = bionicReading.val === true ? textVide(chunk) : cached(chunk);
                 });
                 ConfigChaptersLink.visbile();
             }

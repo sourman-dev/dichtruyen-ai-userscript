@@ -4,6 +4,7 @@ import { addToHistory } from "./cached";
 import type { HistoryItem } from "./types";
 import { replaceAppState, settingsState } from "./store";
 import { openAICompletion } from "./ai";
+import van from "vanjs-core";
 
 export async function fetchApi(url: string, returnType: string = "json") {
   try {
@@ -238,9 +239,8 @@ export function findPrevNextChapterLinks() {
 }
 
 export const bionicReading = (text: string) => {
-  return settingsState.readerView.bionicReading === true
-    ? textVide(text)
-    : text;
+  const bionicReading = van.derive(() => settingsState.readerView.bionicReading)
+  return bionicReading.val === true ? textVide(text) : text;
 };
 
 export const fetchResource = async (url: string) => {
