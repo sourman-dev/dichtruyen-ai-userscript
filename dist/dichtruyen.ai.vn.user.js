@@ -6,8 +6,9 @@
 // @description  Userscript hỗ trợ đọc dịch online các loại truyện convert, truyện tiếng nước ngoài bằng AI
 // @license      MIT
 // @icon         https://vitejs.dev/logo.svg
-// @source       https://github.com/sourman-dev/dichtruyen-ai-userscript
 // @supportURL   https://github.com/sourman-dev/dichtruyen-ai-userscript/issues
+// @downloadURL  https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js
+// @updateURL    https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js
 // @match        *://*/*
 // @grant        GM.getValue
 // @grant        GM.setValue
