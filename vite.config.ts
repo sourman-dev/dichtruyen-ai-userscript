@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import monkey, { cdn } from 'vite-plugin-monkey';
 import { fileURLToPath, URL } from 'node:url';
 import pkg from './package.json';
-
+const rawUrl = "https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js";
 // https://vitejs.dev/config/
 export default defineConfig({
   define: {
@@ -22,7 +22,8 @@ export default defineConfig({
         description: "Userscript hỗ trợ đọc dịch online các loại truyện convert, truyện tiếng nước ngoài bằng AI",
         author: "suppaman101@gmail.com",
         license: "MIT",
-        source: "https://github.com/sourman-dev/dichtruyen-ai-userscript",
+        updateURL: rawUrl,
+        downloadURL: rawUrl,
         supportURL: "https://github.com/sourman-dev/dichtruyen-ai-userscript/issues",
         match: ['*://*/*'],
         grant: ['GM.getValue', 'GM.setValue'],
