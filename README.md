@@ -101,6 +101,8 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 ![Chọn model AI và cài api key](screenshot/setup-ai.png)
 3. Hiện tại trong Cài đặt/Prompt chỉ chỉnh sửa system prompt và user prompt trực tiệp chưa cho tạo và chuyển qua lại giữa các prompt.
 ![Chỉnh sửa prompt](screenshot/setup-prompt.png)
+4. Nếu bản dịch nào chưa ưng ý thì vào nút Lịch sử đầu tiên bên trái bấm dấu X cạnh chương tương ứng để xoá cached và bấm dịch lại.
+![Xoá cache](screenshot/history.png)
 
 ## Chọn model AI nào? 
 - Hiện tại dịch nhanh, chất lượng tạm khá đối với các truyện ít nhân vật, bối cảnh vừa và miễn phí có gemini-flash-2.0 hoặc gemini-flash-1.5 của google cho người dùng cá nhân chạy khoảng 1500 lần/ngày.
