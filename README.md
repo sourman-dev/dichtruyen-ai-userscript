@@ -1,6 +1,6 @@
 # Userscript Dịch Truyện AI - `dichtruyen.ai.vn.user.js`
 
-Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/)! Đây là một công cụ Tampermonkey giúp dịch truyện online từ tiếng nước ngoài sang tiếng Việt Nam bằng AI. Dưới đây là hướng dẫn chi tiết để cài đặt và sử dụng script trên các nền tảng: Windows, Linux, Android, macOS, iPad, và iPhone.
+Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js)! Đây là một công cụ Tampermonkey giúp dịch truyện online từ tiếng nước ngoài sang tiếng Việt Nam bằng AI. Dưới đây là hướng dẫn chi tiết để cài đặt và sử dụng script trên các nền tảng: Windows, Linux, Android, macOS, iPad, và iPhone.
 
 #### Demo:
 [![Video demo](screenshot/video.png)](https://www.youtube.com/watch?v=Zhgpk1vYc3o)
@@ -9,7 +9,7 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 
 ## Yêu cầu chung
 - **Tampermonkey**: Hầu hết các nền tảng cần cài đặt extension Tampermonkey để chạy userscript. Riêng iPad/iPhone dùng Safari sẽ sử dụng ứng dụng thay thế là **Userscripts**.
-- **File script**: Tải file [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/) từ repository này hoặc nguồn cung cấp của bạn.
+- **File script**: Tải file [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js) từ repository này hoặc nguồn cung cấp của bạn.
 
 ---
 
@@ -39,7 +39,7 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 
 ### Bước 2: Cài đặt dichtruyen.ai.vn.user.js
 1. Mở trình duyệt đã cài Tampermonkey.
-2. Kéo file `dichtruyen.ai.vn.user.js` vào trình duyệt hoặc nhấp vào biểu tượng Tampermonkey -> **"Add a new script"** -> dán nội dung file -> **Save**.
+2. Kéo file [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js) vào trình duyệt hoặc nhấp vào biểu tượng Tampermonkey -> **"Add a new script"** -> dán nội dung file -> **Save**.
 3. Nhấn **"Install"** khi được hỏi.
 4. Truy cập trang web truyện để kiểm tra script.
 
@@ -55,7 +55,7 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
   2. Tải file `.crx` của Tampermonkey từ [Chrome Web Store](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) bằng cách dùng công cụ tải extension (nếu Chrome không hỗ trợ trực tiếp).
 
 ### Bước 2: Cài đặt dichtruyen.ai.vn.user.js
-1. Lưu file `dichtruyen.ai.vn.user.js` vào bộ nhớ thiết bị.
+1. Lưu file [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js) vào bộ nhớ thiết bị.
 2. Mở trình duyệt, vào **Tampermonkey Dashboard** -> **Utilities** -> **Import from file** -> Chọn file `.user.js`.
 3. Nhấn **"Install"** và kiểm tra trên trang web truyện.
 
@@ -71,7 +71,7 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 
 ### Bước 2: Cài đặt dichtruyen.ai.vn.user.js
 1. Mở trình duyệt đã cài Tampermonkey.
-2. Kéo file `dichtruyen.ai.vn.user.js` vào trình duyệt.
+2. Kéo file [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js) vào trình duyệt.
 3. Xác nhận **"Install"** trong cửa sổ Tampermonkey.
 4. Kiểm tra script trên trang web truyện.
 
@@ -82,11 +82,11 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 - Trên iOS/iPadOS, Tampermonkey không hỗ trợ Safari trực tiếp. Dùng **Userscripts** thay thế:
   1. Tải **Userscripts** từ [App Store - Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887) (Yêu cầu iOS 15.0+ hoặc iPadOS 15.0+).
   2. Mở ứng dụng Userscripts, chọn thư mục lưu script (ví dụ: iCloud Drive).
-  3. Lưu file `dichtruyen.ai.vn.user.js` vào thư mục đó qua Files app.
+  3. Lưu file [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js) vào thư mục đó qua Files app.
 
 ### Bước 2: Kích hoạt và Cài đặt
 1. Mở **Safari**, vào **Settings** -> **Extensions** -> Bật **Userscripts**.
-2. Truy cập một trang web truyện, nhấn biểu tượng **"AA"** trên thanh địa chỉ -> **Userscripts** -> Chọn file `dichtruyen.ai.vn.user.js`.
+2. Truy cập một trang web truyện, nhấn biểu tượng **"AA"** trên thanh địa chỉ -> **Userscripts** -> Chọn file [`dichtruyen.ai.vn.user.js`](https://raw.githubusercontent.com/sourman-dev/dichtruyen-ai-userscript/main/dist/dichtruyen.ai.vn.user.js).
 3. Script sẽ tự động chạy khi khớp với `@match`.
 
 ### Lưu ý
