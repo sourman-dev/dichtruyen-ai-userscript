@@ -77,6 +77,12 @@ export default function() {
                             onblur: handleApiKeyChange
                         })
                     ),
+                    div({ class: "pure-control-group" }, 
+                        () => {
+                            const note = settingsState.providers?.find(p => p.selected)?.note;
+                            return note ? div({ innerHTML: note }) : null;
+                        }
+                    ),
                     label({ class: "saved-message" }, () => lblRs2.val)
                 )
             )

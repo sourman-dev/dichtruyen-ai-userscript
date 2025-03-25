@@ -1,8 +1,13 @@
 import { defineConfig } from 'vite';
 import monkey, { cdn } from 'vite-plugin-monkey';
 import { fileURLToPath, URL } from 'node:url';
+import pkg from './package.json';
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

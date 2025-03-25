@@ -1,9 +1,9 @@
 import { define } from "vanjs-element";
 import van from "vanjs-core";
-import { Tabs} from "vanjs-ui";
+import { Tabs } from "vanjs-ui";
 import PromptTab from "../components/promptTab";
 import AiProviderTab from "../components/aiProviderTab";
-
+import VersionTab from "../components/versionTab";
 const { div, style } = van.tags;
 
 define("settings-view", () => {
@@ -25,7 +25,8 @@ define("settings-view", () => {
               },
               {
                 Prompt: PromptTab(),
-                AI: AiProviderTab
+                AI: AiProviderTab,
+                Update: VersionTab()
               }
             )
         )

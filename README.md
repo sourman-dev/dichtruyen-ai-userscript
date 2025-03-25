@@ -1,6 +1,6 @@
 # Userscript Dịch Truyện AI - `dichtruyen.ai.vn.user.js`
 
-Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/download/v0.0.2/dichtruyen.ai.vn.user.js)! Đây là một công cụ Tampermonkey giúp dịch truyện online từ tiếng nước ngoài sang tiếng Việt Nam bằng AI. Dưới đây là hướng dẫn chi tiết để cài đặt và sử dụng script trên các nền tảng: Windows, Linux, Android, macOS, iPad, và iPhone.
+Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/)! Đây là một công cụ Tampermonkey giúp dịch truyện online từ tiếng nước ngoài sang tiếng Việt Nam bằng AI. Dưới đây là hướng dẫn chi tiết để cài đặt và sử dụng script trên các nền tảng: Windows, Linux, Android, macOS, iPad, và iPhone.
 
 #### Demo:
 [![Video demo](screenshot/video.png)](https://www.youtube.com/watch?v=Zhgpk1vYc3o)
@@ -9,7 +9,7 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 
 ## Yêu cầu chung
 - **Tampermonkey**: Hầu hết các nền tảng cần cài đặt extension Tampermonkey để chạy userscript. Riêng iPad/iPhone dùng Safari sẽ sử dụng ứng dụng thay thế là **Userscripts**.
-- **File script**: Tải file [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/download/v0.0.2/dichtruyen.ai.vn.user.js) từ repository này hoặc nguồn cung cấp của bạn.
+- **File script**: Tải file [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/) từ repository này hoặc nguồn cung cấp của bạn.
 
 ---
 
@@ -23,7 +23,7 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 
 ### Bước 2: Cài đặt dichtruyen.ai.vn.user.js
 1. Mở trình duyệt đã cài Tampermonkey.
-2. Kéo và thả file [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/download/v0.0.2/dichtruyen.ai.vn.user.js) vào cửa sổ trình duyệt.
+2. Kéo và thả file [`dichtruyen.ai.vn.user.js`](https://github.com/sourman-dev/dichtruyen-ai-userscript/releases/) vào cửa sổ trình duyệt.
 3. Tampermonkey sẽ hiển thị cửa sổ xác nhận. Nhấn **"Install"** để cài đặt script.
 4. Mở một trang web đọc truyện online (theo `@match` trong script) để kiểm tra.
 
