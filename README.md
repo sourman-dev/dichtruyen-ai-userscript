@@ -2,6 +2,8 @@
 
 Chào mừng bạn đến với userscript `dichtruyen.ai.vn.user.js`! Đây là một công cụ Tampermonkey giúp dịch truyện online từ tiếng nước ngoài sang tiếng Việt Nam bằng AI. Dưới đây là hướng dẫn chi tiết để cài đặt và sử dụng script trên các nền tảng: Windows, Linux, Android, macOS, iPad, và iPhone.
 
+[![Video demo](https://img.youtube.com/vi/Zhgpk1vYc3o/0.jpg)](https://www.youtube.com/watch?v=Zhgpk1vYc3o)
+
 ---
 
 ## Yêu cầu chung
