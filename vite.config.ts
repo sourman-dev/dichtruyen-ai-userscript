@@ -13,7 +13,12 @@ export default defineConfig({
       entry: 'src/main.ts',
       userscript: {
         icon: 'https://vitejs.dev/logo.svg',
-        namespace: 'npm/vite-plugin-monkey',
+        namespace: 'https://github.com/sourman-dev/dichtruyen-ai-userscript',
+        description: "Userscript hỗ trợ đọc dịch online các loại truyện convert, truyện tiếng nước ngoài bằng AI",
+        author: "suppaman101@gmail.com",
+        license: "MIT",
+        source: "https://github.com/sourman-dev/dichtruyen-ai-userscript",
+        supportURL: "https://github.com/sourman-dev/dichtruyen-ai-userscript/issues",
         match: ['*://*/*'],
         grant: ['GM.getValue', 'GM.setValue'],
         'inject-into': 'content',

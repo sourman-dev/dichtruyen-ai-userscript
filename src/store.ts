@@ -4,7 +4,7 @@ import { getSystemPrompt, getAiProviders } from "./utils";
 import type { PromptItem, AiProvider, AppState } from "./types";
 import { GM } from "$";
 
-const APP_VERSION = "0.0.2";
+const APP_VERSION = "v0.0.2";
 
 export const DEFAULT_SETTINGS = {
   version: APP_VERSION,
@@ -30,15 +30,21 @@ export const DEFAULT_SETTINGS = {
     includeTitle: false,
   },
 };
+
 let initialState: typeof DEFAULT_SETTINGS;
+
 export const settingsState = vanX.reactive(DEFAULT_SETTINGS);
+
 export const appState = vanX.reactive({
   currentView: "empty",
   isTranslating: false,
   openReaderConfig: false
 } as AppState);
+
 export async function initStore() {
   const savedState = await GM.getValue("dichtruyen-ai");
+  // const releaseData = await getRelease(true);
+  // console.log(releaseData)
   if (!savedState) {
     const systemPrompt = await getSystemPrompt();
     const defaultSettings = DEFAULT_SETTINGS;

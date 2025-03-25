@@ -24,6 +24,7 @@ export interface AiProvider {
   models: [AiProviderModel];
   apiKey: string | null;
   selected: boolean;
+  note?: string | null;
 }
 
 export interface AiProviderItem {
@@ -43,4 +44,12 @@ export interface OpenAIOptions {
   baseURL: string;
   apiKey: string;
   data: any;
+}
+
+export interface FetchCachedOption {
+  apiURL: string;
+  apiType: string;
+  parseJSON?: boolean;
+  nameOfCache: string;
+  needProcess?: boolean;
 }
