@@ -1,9 +1,9 @@
 // import { textVide } from "text-vide";
 import { oneLine, stripIndent } from "common-tags";
 import { addToHistory } from "./cached";
-import type { FetchCachedOption, HistoryItem } from "./types";
+import type { FetchCachedOption, GeminiCompletionOptions, HistoryItem } from "./types";
 import { replaceAppState, settingsState } from "./store";
-import { openAICompletion } from "./ai";
+import { openAICompletion, geminiCompletion } from "./ai";
 import { GM } from "$";
 // import van from "vanjs-core";
 
@@ -30,12 +30,6 @@ async function fetchAndCached(options: FetchCachedOption, isForced: boolean = fa
       if(options.parseJSON){
         data = data ? JSON.parse(data) : null
       }
-      // const releaseData = {
-      //   version: data.tag_name,
-      //   description: data.body,
-      //   fileUrl: data.assets[0]?.browser_download_url || null
-      // };
-
       if(data){
         await GM.setValue(nameOfCache, options.parseJSON ? JSON.stringify(data): data);
         await GM.setValue(`${nameOfCache}-check`, Date.now());
@@ -70,26 +64,6 @@ export async function getAiProviders(isForced: boolean = false) {
     parseJSON: true
   }
   return await fetchAndCached(options, isForced);
-  // const lastCheck = await GM.getValue("dichtruyen-ai:providers-check");
-  // const cachedProviders = await GM.getValue("dichtruyen-ai:providers");
-  // const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-
-  // if (isForced || !lastCheck || !cachedProviders || Date.now() - lastCheck > twelveHours) {
-  //   const response = await fetchApi(
-  //     "https://gist.githubusercontent.com/sourman-dev/7d393f0f46987eec725da4388e278813/raw",
-  //     "text"
-  //   );
-  //   const providers = response ? JSON.parse(response) : null;
-    
-  //   if (providers) {
-  //     await GM.setValue("dichtruyen-ai:providers", JSON.stringify(providers));
-  //     await GM.setValue("dichtruyen-ai:providers-check", Date.now());
-  //   }
-    
-  //   return providers;
-  // }
-
-  // return JSON.parse(cachedProviders);
 }
 
 export async function getExtractorPrompt(isForced: boolean = false) {
@@ -116,27 +90,36 @@ export const translateFunc = async (
       throw new Error("AI provider configuration is incomplete.");
     }
 
-    const options = {
-      baseURL: currentAi.baseURL,
-      apiKey: currentAi.apiKey,
-      data: {
-        model: currentAi?.model,
-        messages: [{ role: "user", content: prompt.content }],
-        stream: true,
-      },
-    };
-
-    // console.log(currentAi)
 
     let translated = "";
-
+    if(currentAi.name !== "google"){
+      const options = {
+        baseURL: currentAi.baseURL,
+        apiKey: currentAi.apiKey,
+        data: {
+          model: currentAi?.model,
+          messages: [{ role: "user", content: prompt.content }],
+          stream: true,
+        },
+      };
+      await openAICompletion(options, (chunk: string) => {
+        console.log("In progress...");
+        translated += chunk;
+        onChunk(translated);
+      });
+    }else{
+      const options = {
+        model: currentAi.model,
+        apiKey: currentAi.apiKey,
+        contents: prompt.content,
+      } as GeminiCompletionOptions;
+      await geminiCompletion(options, (chunk: string) => {
+        console.log("In progress...");
+        translated += chunk;
+        onChunk(translated);
+      })
+    }
     // const stream = await pool.exec("openAICompletion", [options]);
-    await openAICompletion(options, (chunk: string) => {
-      console.log("In progress...");
-      translated += chunk;
-      onChunk(translated);
-    });
-    
     console.log("Done!");
     const history = {
       url: window.location.href,
@@ -250,18 +233,26 @@ export const fetchResource = async (url: string) => {
 };
 
 export const getRelease = async (isForced: boolean = false) => {
-  const options: FetchCachedOption = {
-    apiURL: "https://api.github.com/repos/sourman-dev/dichtruyen-ai-userscript/releases/latest",
-    apiType: "text",
-    nameOfCache: "dichtruyen-ai:release",
-    parseJSON: true
+  try{
+    const options: FetchCachedOption = {
+      apiURL: "https://api.github.com/repos/sourman-dev/dichtruyen-ai-userscript/releases/latest",
+      apiType: "text",
+      nameOfCache: "dichtruyen-ai:release",
+      parseJSON: true
+    }
+    const data = await fetchAndCached(options, isForced);
+    const releaseData = {
+      version: data.tag_name,
+      description: data.body,
+      fileUrl: data.assets[0]?.browser_download_url || null
+    };
+    await GM.setValue("dichtruyen-ai:release", JSON.stringify(releaseData));
+    return releaseData;
+  }catch(e){
+    return {
+      version: __APP_VERSION__,
+      description: null,
+      fileUrl: null
+    }
   }
-  const data = await fetchAndCached(options, isForced);
-  const releaseData = {
-    version: data.tag_name,
-    description: data.body,
-    fileUrl: data.assets[0]?.browser_download_url || null
-  };
-  await GM.setValue("dichtruyen-ai:release", JSON.stringify(releaseData));
-  return releaseData;
 }

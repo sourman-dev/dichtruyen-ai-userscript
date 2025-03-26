@@ -53,3 +53,9 @@ export interface FetchCachedOption {
   nameOfCache: string;
   needProcess?: boolean;
 }
+
+export interface GeminiCompletionOptions {
+  apiKey: string;
+  model: string; // ví dụ: 'gemini-1.5-flash', 'gemini-2.5-pro-exp-03-25'
+  contents: string;
+}

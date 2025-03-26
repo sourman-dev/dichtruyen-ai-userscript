@@ -1,6 +1,10 @@
-import { OpenAIOptions } from "./types";
+import { GeminiCompletionOptions, OpenAIOptions } from "./types";
+import { GoogleGenAI } from "@google/genai";
 
-export async function openAICompletion(options: OpenAIOptions, onChunk: (chunk: string) => void) {
+export async function openAICompletion(
+  options: OpenAIOptions,
+  onChunk: (chunk: string) => void
+) {
   try {
     const apiURL = `${options.baseURL}chat/completions`;
     const response = await fetch(apiURL, {
@@ -35,12 +39,12 @@ export async function openAICompletion(options: OpenAIOptions, onChunk: (chunk: 
 
         for (const line of lines) {
           const trimmedLine = line.trim();
-          if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+          if (!trimmedLine || !trimmedLine.startsWith("data: ")) continue;
 
           try {
             const jsonStr = trimmedLine.slice(5).trim(); // Remove 'data: ' more safely
-            if (jsonStr === '[DONE]') {
-              onChunk('\n[Translation completed]');
+            if (jsonStr === "[DONE]") {
+              onChunk("\n[Translation completed]");
               return;
             }
 
@@ -51,7 +55,7 @@ export async function openAICompletion(options: OpenAIOptions, onChunk: (chunk: 
             }
 
             if (data?.choices?.[0]?.finish_reason === "stop") {
-              onChunk('\n[Translation completed]');
+              onChunk("\n[Translation completed]");
               return;
             }
           } catch (e) {
@@ -64,11 +68,11 @@ export async function openAICompletion(options: OpenAIOptions, onChunk: (chunk: 
       // Fallback for browsers that don't support ReadableStream
       const text = await response.text();
       try {
-        const lines = text.split('\n');
+        const lines = text.split("\n");
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
+          if (line.startsWith("data: ")) {
             const jsonStr = line.slice(5).trim();
-            if (jsonStr === '[DONE]') continue;
+            if (jsonStr === "[DONE]") continue;
             const data = JSON.parse(jsonStr);
             const content = data?.choices?.[0]?.delta?.content;
             if (content) {
@@ -76,7 +80,7 @@ export async function openAICompletion(options: OpenAIOptions, onChunk: (chunk: 
             }
           }
         }
-        onChunk('\n[Translation completed]');
+        onChunk("\n[Translation completed]");
       } catch (e) {
         console.error("Error processing response:", e);
         throw e;
@@ -86,4 +90,24 @@ export async function openAICompletion(options: OpenAIOptions, onChunk: (chunk: 
     console.error("Stream error:", error);
     throw error;
   }
+}
+
+/**
+ * Gọi Gemini API để tạo nội dung dạng stream.
+ * @param options Các tùy chọn cho API call (apiKey, model, messages).
+ * @param onChunk Callback được gọi mỗi khi nhận được một phần text từ stream.
+ */
+export async function geminiCompletion(
+  options: GeminiCompletionOptions,
+  onChunk: (chunk: string) => void
+): Promise<void> {
+  const ai = new GoogleGenAI({ apiKey: options.apiKey });
+  const response = await ai.models.generateContentStream({
+    model: options.model,
+    contents: options.contents,
+  });
+  for await (const chunk of response) {
+    onChunk(chunk.text as string);
+  }
+  onChunk("\n[Translation completed]");
 }
