@@ -26,7 +26,7 @@ export default defineConfig({
         downloadURL: rawUrl,
         supportURL: "https://github.com/sourman-dev/dichtruyen-ai-userscript/issues",
         match: ['*://*/*'],
-        grant: ['GM.getValue', 'GM.setValue'],
+        grant: ['GM.getValue', 'GM.setValue', 'GM.xmlHttpRequest'],
         'inject-into': 'content',
       },
     }),
