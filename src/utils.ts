@@ -229,53 +229,93 @@ export function currentPrompt(text: string) {
   };
 }
 
-export function findPrevNextChapterLinks() {
-  const current = window.location.href;
-  const origin = window.location.origin;
-  const lastSegment = current.split("/").pop() || "";
-  const middleSegment = current.replace(origin, "").replace(lastSegment, "");
-  const allLinks = document.getElementsByTagName("a");
+export function findElementByIndicators(indicators: string[]): { element: HTMLAnchorElement | null, indicator: string | null } {
+  const links = document.querySelectorAll('a');
+  let foundElement = null;
+  let foundIndicator = null;
 
-  const matchingLinks = [
-    ...new Set(
-      Array.from(allLinks)
-        .map((p) => p.href)
-        .filter((link) => {
-          return link && link.lastIndexOf(`${origin}${middleSegment}`) !== -1;
-        })
-        .filter((p) => {
-          const lastSegment = p.split("/").pop();
-          return (
-            p !== `${origin}${middleSegment}` &&
-            lastSegment?.match(/\d+/) != null
-          );
-        })
-        .concat(current)
-    ),
-  ].sort((a, b) => {
-    // Lấy segment cuối của URL (sau dấu / cuối cùng)
-    const lastA = a.split('/').pop();
-    const lastB = b.split('/').pop();
+  for (const link of links) {
+    const linkText = link.textContent?.trim() || '';
+    const ariaLabel = link.getAttribute('aria-label') || '';
+    const title = link.getAttribute('title') || '';
+    const combinedText = `${linkText} ${ariaLabel} ${title}`;
 
-    // Trích xuất số từ segment cuối
-    const numA = parseInt(lastA?.match(/\d+/)?.[0] ?? "0", 10);
-    const numB = parseInt(lastB?.match(/\d+/)?.[0] ?? "0", 10);
+    const found = indicators.find(indicator => 
+      combinedText.toLowerCase().includes(indicator.toLowerCase())
+    );
 
-    return numA - numB; // Tăng dần: từ bé đến lớn
-});
-  // console.log(matchingLinks, middleSegment)
-  if (matchingLinks.length === 2) {
-    if (matchingLinks[0] === current) {
-      return { previous: null, next: matchingLinks[1] };
-    } else if (matchingLinks[1] === current) {
-      return { previous: matchingLinks[0], next: null };
+    if (found) {
+      foundElement = link;
+      foundIndicator = found;
+      break;
     }
-  } else if (matchingLinks.length === 3 && matchingLinks[1] === current) {
-    return { previous: matchingLinks[0], next: matchingLinks[2] };
   }
 
-  return { previous: null, next: null };
+  return {
+    element: foundElement,
+    indicator: foundIndicator
+  };
 }
+
+export function findPrevNextChapterLinks() {
+  const previousIndicators = [
+    'trước', 'previous', 'prev', '<', '←', '«',
+    '上一章', '上一節', 'back', 'Previous Chapter',
+    'Prev Chapter', '上章', 'Chương trước'
+  ];
+
+  const nextIndicators = [
+    'sau', 'next', '>', '→', '»', 'tiếp',
+    '下一章', '下一節', 'Next Chapter',
+    '下章', 'Chương sau', 'tiếp theo'
+  ];
+
+  const prevResult = findElementByIndicators(previousIndicators);
+  const nextResult = findElementByIndicators(nextIndicators);
+
+  let prevUrl = prevResult.element?.href || null;
+  let nextUrl = nextResult.element?.href || null;
+
+  // Fallback to URL pattern matching if no links found
+  if (!isValidUrl(prevUrl) || !isValidUrl(nextUrl)) {
+    const currentUrl = window.location.href;
+    const urlNumber = currentUrl.match(/\d+/)?.[0];
+
+    if (urlNumber) {
+      const currentNum = parseInt(urlNumber);
+      const links = document.querySelectorAll('a');
+      
+      links.forEach(link => {
+        const href = link.href;
+        const hrefNumber = href.match(/\d+/)?.[0];
+        
+        if (hrefNumber) {
+          const num = parseInt(hrefNumber);
+          if (num === currentNum - 1) {
+            prevUrl = href;
+          } else if (num === currentNum + 1) {
+            nextUrl = href;
+          }
+        }
+      });
+    }
+  }
+
+  return {
+    previous: isValidUrl(prevUrl) ? prevUrl : prevResult.indicator,
+    next: isValidUrl(nextUrl) ? nextUrl : nextResult.indicator,
+  };
+}
+
+export const isValidUrl = (url: string | null) => {
+  if (!url) return false;
+  try {
+    const parsedUrl = new URL(url);
+    return parsedUrl.protocol !== 'javascript:';
+  } catch {
+    return false;
+  }
+};
 
 export const fetchResource = async (url: string) => {
   return await fetchApi(url, "text");

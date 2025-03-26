@@ -12,7 +12,7 @@ const { div } = van.tags;
 define("reader-view", ({mount}) => {
     const container = div({class: "content-container"});
     const bionicReading = van.state(false);
-    
+    // console.log(findPrevNextChapterLinks2())
     mount(() => {
         (async () => {
             const cached =  await getFromHistory(window.location.href);

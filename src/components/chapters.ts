@@ -1,5 +1,5 @@
 import van from "vanjs-core";
-import { findPrevNextChapterLinks } from "../utils";
+import { findPrevNextChapterLinks, findElementByIndicators , isValidUrl } from "../utils";
 import { replaceAppState } from "../store";
 const { div, button, span } = van.tags;
 
@@ -57,7 +57,19 @@ const chapterButton = (lbl: string, link: string | null) => {
   return button(
     {
       disable: !link,
-      onclick: () => link && (window.location.href = link),
+      onclick: () => {
+        // console.log(link)
+        if(!link) return;
+        if(isValidUrl(link)){
+            window.location.href = link;
+        }else{
+            const result = findElementByIndicators([link]);
+            // console.log(link, result)
+            if(result && result.element){
+                result.element.click(); // Giả lập click vào element
+            }
+        }
+      },
       style:
         "height: 30px; min-width: 30px; display: flex; align-items: center; justify-content: center;",
     },
