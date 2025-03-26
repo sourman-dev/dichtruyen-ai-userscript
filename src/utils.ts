@@ -1,9 +1,9 @@
 // import { textVide } from "text-vide";
 import { oneLine, stripIndent } from "common-tags";
 import { addToHistory } from "./cached";
-import type { FetchCachedOption, GeminiCompletionOptions, HistoryItem } from "./types";
+import type { FetchCachedOption, HistoryItem } from "./types";
 import { replaceAppState, settingsState } from "./store";
-import { openAICompletion, geminiCompletion } from "./ai";
+import { openAICompletion } from "./ai";
 import { GM } from "$";
 // import van from "vanjs-core";
 
@@ -92,34 +92,21 @@ export const translateFunc = async (
 
 
     let translated = "";
-    if(currentAi.name !== "google"){
-      const options = {
-        baseURL: currentAi.baseURL,
-        apiKey: currentAi.apiKey,
-        data: {
-          model: currentAi?.model,
-          messages: [{ role: "user", content: prompt.content }],
-          stream: true,
-        },
-      };
-      await openAICompletion(options, (chunk: string) => {
-        console.log("In progress...");
-        translated += chunk;
-        onChunk(translated);
-      });
-    }else{
-      const options = {
-        model: currentAi.model,
-        apiKey: currentAi.apiKey,
-        contents: prompt.content,
-      } as GeminiCompletionOptions;
-      await geminiCompletion(options, (chunk: string) => {
-        console.log("In progress...");
-        translated += chunk;
-        onChunk(translated);
-      })
-    }
-    // const stream = await pool.exec("openAICompletion", [options]);
+    const options = {
+      baseURL: currentAi.baseURL,
+      apiKey: currentAi.apiKey,
+      data: {
+        model: currentAi?.model,
+        messages: [{ role: "user", content: prompt.content }],
+        stream: true,
+      },
+    };
+    await openAICompletion(options, (chunk: string) => {
+      console.log("In progress...");
+      translated += chunk;
+      onChunk(translated);
+    });
+
     console.log("Done!");
     const history = {
       url: window.location.href,

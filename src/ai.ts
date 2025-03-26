@@ -1,5 +1,4 @@
-import { GeminiCompletionOptions, OpenAIOptions } from "./types";
-import { GoogleGenAI } from "@google/genai";
+import { OpenAIOptions } from "./types";
 
 export async function openAICompletion(
   options: OpenAIOptions,
@@ -90,24 +89,4 @@ export async function openAICompletion(
     console.error("Stream error:", error);
     throw error;
   }
-}
-
-/**
- * Gọi Gemini API để tạo nội dung dạng stream.
- * @param options Các tùy chọn cho API call (apiKey, model, messages).
- * @param onChunk Callback được gọi mỗi khi nhận được một phần text từ stream.
- */
-export async function geminiCompletion(
-  options: GeminiCompletionOptions,
-  onChunk: (chunk: string) => void
-): Promise<void> {
-  const ai = new GoogleGenAI({ apiKey: options.apiKey });
-  const response = await ai.models.generateContentStream({
-    model: options.model,
-    contents: options.contents,
-  });
-  for await (const chunk of response) {
-    onChunk(chunk.text as string);
-  }
-  onChunk("\n[Translation completed]");
 }
