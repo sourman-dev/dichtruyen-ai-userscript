@@ -29,6 +29,7 @@ export const DEFAULT_SETTINGS = {
     bionicReading: false,
     includeTitle: false,
   },
+  isVietPharseFirst: false
 };
 
 let initialState: typeof DEFAULT_SETTINGS;

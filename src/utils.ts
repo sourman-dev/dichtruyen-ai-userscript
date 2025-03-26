@@ -75,6 +75,66 @@ export async function getExtractorPrompt(isForced: boolean = false) {
   return await fetchAndCached(options, isForced);
 }
 
+async function vietPhraseTrans(content: string, type: number = 0): Promise<string>{
+  const func = type === 0 ? "TranslateHanViet" : "TranslateVietPhraseS"
+  return new Promise((resolve, reject) => {
+    GM.xmlHttpRequest({
+      method: "POST",
+      url: `https://vietphrase.info/Vietphrase/${func}`,
+      data: JSON.stringify({ chineseContent: content }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      onload: function (response) {
+        resolve(response.responseText); // Thành công, trả về dữ liệu
+      },
+      onerror: function (error) {
+        reject(error); // Lỗi, từ chối Promise
+      },
+    });
+  });
+}
+
+export async function useVietPhrase(content: string) {
+  try {
+    let translated = await vietPhraseTrans(content);
+    const chineseRegex = /[\u4E00-\u9FFF]+/g;
+    
+    // Extract all Chinese characters/words
+    const chineseMatches = translated.match(chineseRegex) || [];
+    
+    // Make unique array and format to [word], pattern
+    const uniqueWords = [...new Set(chineseMatches)]
+      .map(word => `[${word}]`)
+      .join(',');
+    
+    if (uniqueWords.length > 0) {
+      // Get VietPhrase translations
+      const vietPhraseResult = await vietPhraseTrans(uniqueWords, 1);
+      console.log(uniqueWords, vietPhraseResult);
+      // Parse the results and create replacement map
+      const translations = vietPhraseResult.split(',')
+        .reduce((acc, curr) => {
+          const match = curr.match(/\[([\u4E00-\u9FFF]+)\]=(.*)/);
+          if (match) {
+            acc[match[1]] = match[2].trim();
+          }
+          return acc;
+        }, {} as Record<string, string>);
+      
+      // Replace all Chinese words with their translations
+      for (const [chinese, viet] of Object.entries(translations)) {
+        const regex = new RegExp(chinese, 'g');
+        translated = translated.replace(regex, viet);
+      }
+    }
+
+    return translated;
+  } catch (e) {
+    console.error("use VietPharse error: ", e);
+  }
+}
+
 export const translateFunc = async (
   text: string | null | undefined,
   onChunk: (chunk: string) => void
@@ -82,7 +142,8 @@ export const translateFunc = async (
   try {
     const currentAi = currentAiProvider();
     if (!text || text.length <= 5) return;
-    const prompt = currentPrompt(text);
+    const content = currentAi?.isVietPharseFirst ? await useVietPhrase(text) : text;
+    const prompt = currentPrompt(content as string);
     if (!currentAi || !prompt.isValid) return;
     replaceAppState({ isTranslating: true, currentView: "reader" });
 
@@ -129,6 +190,7 @@ export function currentAiProvider() {
     baseURL: null as string | null,
     model: null as string | null,
     apiKey: null as string | null,
+    isVietPharseFirst: settingsState.isVietPharseFirst ?? false
   };
   const selectedProvider = settingsState.providers.find(
     (p) => p.selected === true

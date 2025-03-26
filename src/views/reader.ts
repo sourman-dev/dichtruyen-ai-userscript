@@ -21,7 +21,7 @@ define("reader-view", ({mount}) => {
                 if(cached){
                     container.innerHTML = bionicReading.val === true ? textVide(cached) : cached;
                     ConfigChaptersLink.visbile()
-                    console.log('////')
+                    // console.log('////')
                 }
             })
             if(!cached){

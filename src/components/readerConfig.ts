@@ -3,12 +3,19 @@ import { Modal } from "vanjs-ui";
 import { appState, settingsState, replaceAppState, replaceReaderState } from "../store";
 const { p, div, button, select, option, label, input } = van.tags;
 const FONTS = [
-    {name: "System ui", value: "system-ui"},
-    {name: "Times New Roman", value: "Times New Roman"},
-    {name: "Arial", value: "Arial"},
-    {name: "Verdana", value: "Verdana"},
+    {name: "System ui", value: `"system-ui", sans-serif`},
+    {name: "Times New Roman", value: `"Times New Roman", serif`},
+    {name: "Arial", value: `"Arial", sans-serif`},
+    {name: "Verdana", value: `"Verdana", sans-serif`},
     {name: "Tahoma", value: "Tahoma"},
-    {name: "Segoe UI", value: "Segoe UI"},
+    {name: "Roboto", value: `"Roboto", sans-serif`},
+    {name: "Be Vietnam Pro", value: `"Be Vietnam Pro", sans-serif`},
+    {name: "Noto Sans", value: `"Noto Sans", sans-serif`},
+    {name: "Merriweather", value: `"Merriweather", serif`},
+    {name: "Lora", value: `"Lora", serif`},
+    {name: "Source Sans 3", value: `"Source Sans 3", sans-serif`},
+    {name: "Open Sans", value: `"Open Sans", sans-serif`},
+    {name: "Playfair Display", value: `"Playfair Display", serif`},
 ]
 const COLORS = [
     {
@@ -100,7 +107,7 @@ export default function () {
                         replaceReaderState({fontSize: e.target.value})
                     }
                 },
-                    Array.from({length: 15}, (_, i) => i + 16).map(size => 
+                    Array.from({length: 15}, (_, i) => i + 20).map(size => 
                         option({
                             value: size, 
                             selected: () => Number(mdlState.val.fontSize) === size

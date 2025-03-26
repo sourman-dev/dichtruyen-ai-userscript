@@ -23,7 +23,7 @@ define("dichtruyen-ai", () => {
       background-color: ${settingsState.readerView.backgroundColor} !important;
     }
     .content-container {
-      font-family: ${settingsState.readerView.fontFamily}, -apple-system, sans-serif;
+      font-family: ${settingsState.readerView.fontFamily} !important;
       line-height: ${settingsState.readerView.lineHeight};
       font-size: ${settingsState.readerView.fontSize}px;
       color: ${textColor};

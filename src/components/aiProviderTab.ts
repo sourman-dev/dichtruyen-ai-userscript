@@ -1,6 +1,6 @@
 import van from "vanjs-core";
 import { settingsState } from "../store";
-const { div, select, option, textarea, label, style } = van.tags;
+const { div, select, option, textarea, label, input, style } = van.tags;
 
 export default function() {
     const lblRs2 = van.state("");
@@ -76,6 +76,18 @@ export default function() {
                             value: () => settingsState.providers?.find(p => p.selected)?.apiKey || "",
                             onblur: handleApiKeyChange
                         })
+                    ),
+                    div({class: "pure-control-group", style: "margin: 5px 0px;"},
+                        label({class: "pure-checkbox"},
+                            input({
+                                type: "checkbox",
+                                checked: settingsState.isVietPharseFirst && settingsState.isVietPharseFirst === true,
+                                onchange: (e) => {
+                                    settingsState.isVietPharseFirst = e.target.checked
+                                }
+                            }),
+                            " Use VietPhrase to translate first?"
+                        )
                     ),
                     div({ class: "pure-control-group" }, 
                         () => {
