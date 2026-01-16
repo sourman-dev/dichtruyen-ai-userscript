@@ -108,6 +108,15 @@ Chào mừng bạn đến với userscript [`dichtruyen.ai.vn.user.js`](https://
 - Hiện tại dịch nhanh, chất lượng tạm khá đối với các truyện ít nhân vật, bối cảnh vừa và miễn phí có gemini-flash-2.0 hoặc gemini-flash-1.5 của google cho người dùng cá nhân chạy khoảng 1500 lần/ngày.
 - Ngoài ra deepseek cùng 1 prompt chất lượng hơn gemini chút xíu nhưng lại qúa chậm và mất phí (dù rất rẻ). Hiện có nhà cung cấp ([Novita.ai đang tặng mỗi tài khoản tại mới 20$](https://novita.ai/referral?invited_code=TV2UGE)), các bạn có gì ủng hộ ạ. Sau khi lấy được api key thì các bạn nhớ chọn Provider : novita.ai chứ không phải deepseek nhé.
 
+## Tài liệu kỹ thuật (Documentation)
+
+Dành cho developers muốn tìm hiểu codebase hoặc đóng góp vào dự án:
+
+- **[Project Overview & PDR](docs/project-overview-pdr.md)** - Tổng quan dự án, mục tiêu, tính năng, technology stack
+- **[Code Standards](docs/code-standards.md)** - Quy chuẩn code, naming conventions, VanJS patterns
+- **[Codebase Summary](docs/codebase-summary.md)** - Cấu trúc codebase, module dependency graph, file organization
+- **[System Architecture](docs/system-architecture.md)** - Kiến trúc hệ thống, data flow, component hierarchy
+
 ## Góp ý và hỗ trợ
 - Nếu gặp lỗi hoặc có ý kiến đóng góp, vui lòng tạo issue trên repository này hoặc liên hệ tác giả.
 - Script được cập nhật thường xuyên để cải thiện hiệu suất dịch AI.

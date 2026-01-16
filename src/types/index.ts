@@ -21,10 +21,41 @@ export interface AiProviderModel {
 export interface AiProvider {
   name: string;
   baseUrl: string;
-  models: [AiProviderModel];
+  models: AiProviderModel[];
   apiKey: string | null;
   selected: boolean;
   note?: string | null;
+  // Custom provider support
+  isCustom?: boolean;
+  supportsModelsEndpoint?: boolean;
+}
+
+// Provider preset for hardcoded defaults
+export interface ProviderPreset {
+  id: string;
+  name: string;
+  baseUrl: string;
+  defaultModels: string[];
+  supportsModelsEndpoint: boolean;
+  note?: string;
+}
+
+// Model cache for GM storage
+export interface ModelCache {
+  providerId: string;
+  models: string[];
+  expiresAt: number;
+}
+
+// Response from /v1/models API
+export interface ModelsApiResponse {
+  object: "list";
+  data: Array<{
+    id: string;
+    object: "model";
+    created?: number;
+    owned_by?: string;
+  }>;
 }
 
 export interface AiProviderItem {
@@ -52,4 +83,9 @@ export interface FetchCachedOption {
   parseJSON?: boolean;
   nameOfCache: string;
   needProcess?: boolean;
+}
+
+export interface Segment {
+  content: string; // Nội dung đoạn cần dịch
+  context?: string; // Ngữ cảnh từ các đoạn trước (nếu có)
 }

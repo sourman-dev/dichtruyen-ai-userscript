@@ -38,6 +38,10 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       keep_fnames: true, // Giữ nguyên tên hàm
+      compress: {
+        drop_console: true, // Xoá tất cả console.log trong production
+        drop_debugger: true, // Xoá debugger statements
+      },
     },
     rollupOptions: {
       output: {

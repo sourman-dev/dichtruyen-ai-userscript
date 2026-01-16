@@ -135,40 +135,161 @@ export async function useVietPhrase(content: string) {
   }
 }
 
+// function splitChapterIntoSegments(
+//   chapter: string,
+//   maxSentences: number = 5,
+//   contextSegments: number = 2
+// ): Segment[] {
+//   // Regex tách dựa trên \n, dấu chấm (.), dấu phẩy (,), và dấu chấm tiếng Trung (。)
+//   const splitRegex = /(\n|[.,！？]|\u3002)\s*/;
+//   const parts = chapter.split(splitRegex);
+
+//   // Ghép lại các phần tử để giữ dấu câu
+//   const sentences = parts
+//     .reduce((acc: string[], part: string, index: number, arr: string[]) => {
+//       if (index % 2 === 0 && part.trim()) {
+//         acc.push(part + (arr[index + 1] || ""));
+//       }
+//       return acc;
+//     }, [])
+//     .filter((s) => s.trim());
+
+//   // Tách thành các đoạn dựa trên maxSentences
+//   const segments: Segment[] = [];
+//   for (let i = 0; i < sentences.length; i += maxSentences) {
+//     const segmentSentences = sentences.slice(i, i + maxSentences);
+//     const content = segmentSentences.join("");
+
+//     // Lấy ngữ cảnh từ các đoạn trước
+//     const contextStart = Math.max(0, i - maxSentences * contextSegments);
+//     const contextSentences = sentences.slice(contextStart, i);
+//     const context = contextSentences.length > 0 ? contextSentences.join("") : undefined;
+
+//     segments.push({ content, context });
+//   }
+
+//   return segments;
+// }
+
+// function extractNames(text: string):string[] {
+//   const nameRegex = /(?:战|叶|令|张|王|李|赵|杨|徐|卢|墨|田)[\u4e00-\u9fa5]{1,3}(?=[\s“的]|$)/g;
+//   return [...new Set(text.match(nameRegex) || [])];
+// }
+
+// async function dictationNames(text: string): Promise<string> {
+//   const names = extractNames(text);
+//   if(names.length <= 0) return "";
+//   // Tạo chuỗi với format "index=name"
+//   const str = names.map((name, index) => `${index}=${name}`).join(", ");
+  
+//   // Dịch chuỗi
+//   const translated = await vietPhraseTrans(str);
+  
+//   // Tách các cặp đã dịch
+//   const translatedPairs = translated.split(", ");
+  
+//   // Tạo object để lưu kết quả dịch cho mỗi index
+//   const translationMap: { [key: string]: string } = {};
+//   translatedPairs.forEach(pair => {
+//       const [index, trans] = pair.split("=").map(s => s.trim());
+//       translationMap[index] = trans;
+//   });
+  
+//   // Kết hợp tên gốc với bản dịch
+//   return names.map((name, index) => `${name}= ${translationMap[index]}`).join(", ");
+// }
+
+async function combinePrompt(text: string){
+  const prompt = currentPrompt();
+  if(!prompt.isValid)return "";
+  const hanViet = await vietPhraseTrans(text);
+  const vietTho = await vietPhraseTrans(text, 1);
+  let str = `${prompt.basePrompt}\nDựa trên:\n`
+    str += `**Bản dịch Hán Việt** (Lấy danh từ riêng): <hanviet>${hanViet}</hanviet>`
+    str+=`**Bản dịch máy**(tham khảo từ khó): <dichmay>${vietTho}</dichmay>\n`
+    str+=`**Bản cần dịch:** <content>${text}</content>`
+    return str;
+}
+
 export const translateFunc = async (
   text: string | null | undefined,
   onChunk: (chunk: string) => void
 ) => {
   try {
+    console.log("[Translate Debug] text:", text);
     const currentAi = currentAiProvider();
+    console.log("[Translate Debug] currentAi:", JSON.stringify(currentAi, null, 2));
     if (!text || text.length <= 5) return;
-    const content = currentAi?.isVietPharseFirst ? await useVietPhrase(text) : text;
-    const prompt = currentPrompt(content as string);
+    
+    const prompt = currentPrompt();
     if (!currentAi || !prompt.isValid) return;
-    replaceAppState({ isTranslating: true, currentView: "reader" });
-
     if (!currentAi?.baseURL || !currentAi?.apiKey) {
       throw new Error("AI provider configuration is incomplete.");
     }
-
-
     let translated = "";
+    replaceAppState({ isTranslating: true, currentView: "reader" });
+    const content = await combinePrompt(text)
     const options = {
-      baseURL: currentAi.baseURL,
-      apiKey: currentAi.apiKey,
+      baseURL: currentAi.baseURL as string,
+      apiKey: currentAi.apiKey as string,
       data: {
         model: currentAi?.model,
-        messages: [{ role: "user", content: prompt.content }],
+        messages: [{ role: "user", content: content }],
         stream: true,
+        temperature: 0.8,
+        top_p: 0.95
       },
-    };
+    }
     await openAICompletion(options, (chunk: string) => {
       console.log("In progress...");
       translated += chunk;
       onChunk(translated);
     });
 
+    // const content = currentAi?.isVietPharseFirst ? await useVietPhrase(text) : text;
+    // const _names = !currentAi?.isVietPharseFirst ? await dictationNames(text) : "";
+    // const _dictationNames = _names.length > 0 ? `[Dịch tên nhân vật như sau: ${_names}]` : ""
+    // // console.log(_dictationNames)
+    // replaceAppState({ isTranslating: true, currentView: "reader" });
+    // const segments = splitChapterIntoSegments(content as string, 12, 4);
+    // // console.log(segments)
+    // const newOptions = async  (segment: Segment) => {
+    //   // const names = extractNames(segment.content);
+    //   // let names2 = names.join(',');
+    //   // if(names.length > 0){
+    //   //   names2 = await vietPhraseTrans(names.join(","))
+    //   // }
+    //   // console.log(names2, names)
+    //   const text = segment.context ? `Dùng xưng hô phù hợp dựa trên ngữ cảnh trước: [${segment.context}]\n${_dictationNames}\nChỉ dịch phần này: <content>${segment.content}</content>` : `${_dictationNames}\n<content>${segment.content}</content>`
+    //   const segmentPrompt  = `${prompt.basePrompt}${text}`
+    //   return {
+    //     baseURL: currentAi.baseURL as string,
+    //     apiKey: currentAi.apiKey as string,
+    //     data: {
+    //       model: currentAi?.model,
+    //       messages: [{ role: "user", content: segmentPrompt }],
+    //       stream: true,
+    //       temperature: 0.8,
+    //       top_p: 0.95
+    //     },
+    //   };
+      
+    // }
+
+    // let translated = "";
+    
+    // for(const seg of segments){
+    //   const options = await newOptions(seg);
+    //   // console.log(seg)
+    //   await openAICompletion(options, (chunk: string) => {
+    //     console.log("In progress...");
+    //     translated += chunk;
+    //     onChunk(translated);
+    //   });
+    // }
+    
     console.log("Done!");
+    onChunk(translated + "\n[Translation completed]");
     const history = {
       url: window.location.href,
       title: document.title,
@@ -185,6 +306,7 @@ export const translateFunc = async (
 };
 
 export function currentAiProvider() {
+  console.log("[Provider Debug] settingsState.providers:", JSON.stringify(settingsState.providers, null, 2));
   const provider = {
     name: null as string | null,
     baseURL: null as string | null,
@@ -199,9 +321,16 @@ export function currentAiProvider() {
     provider.name = selectedProvider.name;
     provider.baseURL = selectedProvider.baseUrl;
     provider.apiKey = selectedProvider.apiKey;
-    const selectedModel = selectedProvider.models.find(
+    // Find selected model, or fallback to first model if none selected
+    let selectedModel = selectedProvider.models.find(
       (p) => p.selected === true
     );
+    if (!selectedModel && selectedProvider.models.length > 0) {
+      // Auto-select first model and save
+      selectedProvider.models[0].selected = true;
+      selectedModel = selectedProvider.models[0];
+      console.log("[Provider Debug] Auto-selected first model:", selectedModel.name);
+    }
     if (selectedModel) {
       provider.model = selectedModel.name;
     }
@@ -211,7 +340,7 @@ export function currentAiProvider() {
   }
 }
 
-export function currentPrompt(text: string) {
+export function currentPrompt() {
   const systemPrompt = settingsState.prompt.systemPrompts.find(
     (p) => p.selected
   )?.content;
@@ -222,10 +351,10 @@ export function currentPrompt(text: string) {
     systemPrompt !== undefined &&
     systemPrompt !== null &&
     systemPrompt.length > 10;
-
+  
   return {
     isValid,
-    content: stripIndent`${oneLine`${systemPrompt}\n${userPrompt}`}\n<content>${text}</content>`,
+    basePrompt: stripIndent`${oneLine`${systemPrompt}\n${userPrompt}`}\n`,
   };
 }
 

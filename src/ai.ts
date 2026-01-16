@@ -1,11 +1,27 @@
 import { OpenAIOptions } from "./types";
 
+// Ensure baseUrl ends with proper path for chat/completions
+function ensureApiPath(baseUrl: string): string {
+  const normalized = baseUrl.trim().replace(/\/+$/, "");
+  // If already ends with /v1, /v1beta, /openai, etc. - add /chat/completions
+  if (/\/(v1|v1beta|openai)$/i.test(normalized)) {
+    return `${normalized}/chat/completions`;
+  }
+  // Otherwise assume /v1 is needed
+  return `${normalized}/v1/chat/completions`;
+}
+
 export async function openAICompletion(
   options: OpenAIOptions,
   onChunk: (chunk: string) => void
 ) {
   try {
-    const apiURL = `${options.baseURL}chat/completions`;
+    const apiURL = ensureApiPath(options.baseURL);
+
+    // Debug: Log the API URL being called
+    console.log("[AI Debug] baseURL from options:", options.baseURL);
+    console.log("[AI Debug] full apiURL:", apiURL);
+
     const response = await fetch(apiURL, {
       method: "POST",
       headers: {
@@ -43,7 +59,7 @@ export async function openAICompletion(
           try {
             const jsonStr = trimmedLine.slice(5).trim(); // Remove 'data: ' more safely
             if (jsonStr === "[DONE]") {
-              onChunk("\n[Translation completed]");
+              // onChunk("\n[Translation completed]");
               return;
             }
 
@@ -54,7 +70,7 @@ export async function openAICompletion(
             }
 
             if (data?.choices?.[0]?.finish_reason === "stop") {
-              onChunk("\n[Translation completed]");
+              // onChunk("\n[Translation completed]");
               return;
             }
           } catch (e) {
@@ -79,7 +95,7 @@ export async function openAICompletion(
             }
           }
         }
-        onChunk("\n[Translation completed]");
+        // onChunk("\n[Translation completed]");
       } catch (e) {
         console.error("Error processing response:", e);
         throw e;

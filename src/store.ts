@@ -1,7 +1,8 @@
 import * as vanX from "vanjs-ext";
 import van from "vanjs-core";
-import { getSystemPrompt, getAiProviders, getRelease } from "./utils";
+import { getSystemPrompt, getRelease } from "./utils";
 import type { PromptItem, AiProvider, AppState } from "./types";
+import { DEFAULT_PROVIDERS, presetToProvider } from "./constants/default-providers";
 import { GM } from "$";
 
 const APP_VERSION = __APP_VERSION__;
@@ -47,25 +48,27 @@ export const appState = vanX.reactive({
 export const mergeProviders = async (
   oldVal: typeof DEFAULT_SETTINGS,
 ) => {
-  const aiProviders = await getAiProviders(true);
-  if (aiProviders?.providers) {
-    oldVal.providers = aiProviders.providers.map((newProvider: AiProvider) => {
-      const existingProvider = oldVal.providers.find(
-        (p: AiProvider) => p.name === newProvider.name
-      );
-      if (
-        existingProvider &&
-        (existingProvider.apiKey || existingProvider.selected)
-      ) {
+  // Use local default providers instead of fetching from Gist
+  const newProviders = DEFAULT_PROVIDERS
+    .filter(p => p.id !== "custom") // Don't add "Custom..." as a saved provider
+    .map(preset => {
+      const existing = oldVal.providers.find(p => p.name === preset.name);
+      if (existing?.apiKey || existing?.selected) {
         return {
-          ...newProvider,
-          apiKey: existingProvider.apiKey,
-          selected: existingProvider.selected,
-        } as AiProvider;
+          ...presetToProvider(preset),
+          apiKey: existing.apiKey,
+          selected: existing.selected,
+          baseUrl: existing.baseUrl || preset.baseUrl, // Preserve user's custom baseUrl
+          models: existing.models.length > 0 ? existing.models : presetToProvider(preset).models
+        };
       }
-      return newProvider;
+      return presetToProvider(preset);
     });
-  }
+
+  // Preserve custom providers added by user
+  const customProviders = oldVal.providers.filter(p => p.isCustom);
+  oldVal.providers = [...newProviders, ...customProviders];
+
   return oldVal;
 };
 
@@ -112,9 +115,13 @@ export async function initStore() {
       content: systemPrompt,
       selected: true,
     });
-    // defaultSettings.prompt.extractorLink = await getExtractorPrompt();
-    const aiProviders = await getAiProviders();
-    defaultSettings.providers = aiProviders?.providers;
+    // Use local default providers (excluding "Custom..." option)
+    defaultSettings.providers = DEFAULT_PROVIDERS
+      .filter(p => p.id !== "custom")
+      .map((p, i) => ({
+        ...presetToProvider(p),
+        selected: i === 0 // Select first provider by default
+      }));
 
     initialState = defaultSettings;
     console.log(initialState)
