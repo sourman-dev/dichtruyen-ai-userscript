@@ -29,7 +29,7 @@ define("reader-view", ({mount}) => {
                 const documentClone = document.cloneNode(true) as Document;
                 const article = new Readability(documentClone).parse();
                 // let translated = ""
-                await translateFunc(article?.content, (chunk: string ) => {
+                await translateFunc(article?.textContent, (chunk: string ) => {
                     container.innerHTML = bionicReading.val === true ? textVide(chunk) : chunk;
                 });
                 ConfigChaptersLink.visbile();
